@@ -116,28 +116,28 @@ This is a **data flight simulator** — the MLE explores their hypotheses before
 raw data
    │
    ▼
-① Data Profiler        — compute proxy signals (no model retrain needed)
+① hepta.generate_statistics()   — per-feature stats + label entropy per segment
    │
    ▼
-② Issue Detector       — surface anomalies across 5 categories (Mode 1, 2, 3)
+② hepta.visualize_statistics()  — TFDV-style display + issue badges
    │
    ▼
-③ Prescription Engine  — recommended action + ML impact explanation per issue
+③ hepta.detect_issues()         — universal detectors + domain rules
+   │                               outputs: Issues (type, signal, direction, confidence)
+   ▼
+④ hepta.display_issues()        — [Apply] [Skip] [Adjust] per issue (human in loop)
    │
    ▼
-④ User Review          — [Apply] [Skip] [Adjust threshold] per issue
+⑤ hepta.generate_manifest()     — outputs manifest.json (weights + filter mask)
    │
    ▼
-⑤ Manifest Generator   — outputs manifest.json (weights + filter mask)
+manifest.apply() → train model → eval NE/AUC
    │
    ▼
-Customer trains on manifest → evaluates model → optional feedback
-   │
-   ▼
-⑥ Policy Update        — feedback improves base policy + domain-adaptive layer
+⑥ hepta.record_feedback()       — improves base policy + domain-adaptive layer
 ```
 
-TFDV stops at step ②. HeptaAI goes to step ⑤.
+TFDV stops at step ②. HeptaAI goes to step ⑥.
 
 ---
 
@@ -361,68 +361,183 @@ Loop 2 is the engine. Loop 1 is the fuel. Loop 3 is the calibration instrument.
 
 ## SDK Design (v1)
 
+Designed to feel familiar to engineers who know TFDV, while extending the workflow to the steps TFDV stops before.
+
+| TFDV step | HeptaAI equivalent | What's new |
+|---|---|---|
+| `generate_statistics_from_csv()` | `hepta.generate_statistics()` | adds label entropy per segment |
+| `visualize_statistics()` | `hepta.visualize_statistics()` | adds issue badges, no CDN/Jupyter required |
+| `validate_statistics()` → anomalies | `hepta.detect_issues()` → Issues | adds directional ML impact + confidence |
+| `display_anomalies()` | `hepta.display_issues()` | shows NE/AUC direction, not just flag |
+| — no equivalent — | `hepta.generate_manifest()` | prescribes fixes, human approves each |
+| — no equivalent — | `manifest.apply()` | applies approved weights + filter mask |
+| — no equivalent — | `hepta.simulate()` | what-if without retraining |
+| — no equivalent — | `hepta.record_feedback()` | closes the loop |
+
+**API style:** module-level functions (like TFDV), not a class instance. Data objects (`Statistics`, `Issues`, `Manifest`) are explicit and inspectable at every step.
+
 ```python
 pip install heptaai
+import heptaai as hepta
 
-from heptaai import Optimizer
+# ── Step 1: Generate statistics ──────────────────────────────────────────
+# Per-feature: count, missing%, mean, p50, p99, median, distribution
+# + label entropy per feature segment (TFDV does not compute this)
+train_stats = hepta.generate_statistics("train.csv", label_col="click")
+eval_stats  = hepta.generate_statistics("eval.csv",  label_col="click")
 
-opt = Optimizer()
+# ── Step 2: Visualize ────────────────────────────────────────────────────
+# Single dataset — per-feature stats + issue badges
+hepta.visualize_statistics(train_stats)
 
-# Mode 1: I know what's bad — fix it
-manifest = opt.fix("duplicates")
-manifest = opt.fix("class_imbalance", target_ratio=0.1)
+# Side-by-side comparison — mirrors tfdv.visualize_statistics(lhs=, rhs=)
+hepta.visualize_statistics(lhs=train_stats, rhs=eval_stats,
+                           lhs_name="TRAIN", rhs_name="EVAL")
 
-# Mode 2: Show me what's hidden
-report = opt.discover("train.csv", label_col="target")
-report.show()   # cross-segment patterns, temporal anomalies, source comparisons
+# ── Step 3: Detect issues ────────────────────────────────────────────────
+# Universal issues detected automatically.
+# Pass serving_statistics to trigger skew detection (mirrors TFDV's pattern).
+issues = hepta.detect_issues(
+    statistics=train_stats,
+    serving_statistics=eval_stats,  # optional — enables train/eval skew checks
+)
+hepta.display_issues(issues)
+# ┌────────────────────────────────────────────────────────────────────────┐
+# │ Issue              Feature        Signal          Direction  Confidence│
+# ├────────────────────────────────────────────────────────────────────────┤
+# │ class_imbalance    click          pos_rate=6.1%   NE↓ AUC↑  HIGH      │
+# │ near_duplicates    –              density=18%     NE↓ AUC↑  HIGH      │
+# │ train_eval_skew    item_category  L∞=0.14         AUC↑      MEDIUM    │
+# │ missing_values     user_age       missing=5.8%    NE↓       MEDIUM    │
+# └────────────────────────────────────────────────────────────────────────┘
 
-# Mode 3: What-if simulation
-opt.simulate("remove samples where engagement_seconds < 2")
-opt.simulate("use only last 90 days")
-
-# Full flow: diagnose → prescribe → manifest
-report = opt.diagnose("train.csv", test="test.csv", label_col="target")
-manifest = report.apply()
-manifest.save("manifest.json")
+# ── Step 4: Generate manifest (no TFDV equivalent) ───────────────────────
+# Human reviews and approves each proposed fix — [Apply] [Skip] [Adjust]
+# No fix is applied without explicit approval (MVP 1).
+manifest = hepta.generate_manifest(train_stats, issues)
 manifest.summary()
-# → filtered 847 duplicates, reweighted 12k samples for skew correction
-# → 71% of original data used
+# → 3 fixes applied to 124,582 samples:
+#     class_imbalance  → upweighted 7,623 positives 14.3×        [HIGH]
+#     near_duplicates  → filtered 22,423 samples (weight=0)       [HIGH]
+#     train_eval_skew  → reweighted 14,200 samples toward eval    [MEDIUM]
+# → estimated direction: NE ↓  AUC ↑
 
-# Optional: gradient signals (higher fidelity, pass your model)
-manifest = opt.diagnose("train.csv", label_col="target", model=my_model).apply()
+# ── Step 5: Apply and train ──────────────────────────────────────────────
+clean_df = manifest.apply("train.csv")   # returns weighted DataFrame
+manifest.save("manifest.json")           # or export for external pipelines
 
-# Optional feedback after retraining
-opt.feedback(improved=True, delta=0.015)
+# ── Step 6: Feedback (optional) ──────────────────────────────────────────
+hepta.record_feedback(manifest, improved=True, auc_delta=0.017)
+```
 
-# Domain-specific rule registration (optional — extends universal detection)
-@opt.rule
-def flag_non_impression_negatives(x):
-    if x["label"] == 0 and x["impression_flag"] == 0:
-        return "flag"
+### Mode 1 — Fix Known Issues (shortcut)
+
+```python
+# Engineer knows what's wrong — skip detection, go straight to manifest
+manifest = hepta.fix("train.csv", label_col="click",
+                     issues=["class_imbalance", "near_duplicates"])
+manifest.save("manifest.json")
+```
+
+### Mode 2 — Discover Hidden Patterns
+
+```python
+# Cross-segment analysis — surfaces patterns invisible to per-feature stats
+issues = hepta.detect_issues(train_stats, cross_segment=True)
+hepta.display_issues(issues)
+# → "APAC segment has 4× higher label noise than NA (entropy 0.61 vs 0.15)"
+# → "Weekend data has 2× duplicate density vs weekday"
+# → "Source B has 5× more missing user_age than Source A"
+```
+
+### Mode 3 — What-If Simulation (no equivalent anywhere)
+
+```python
+# Explore hypothetical changes using proxy signals — no retrain needed
+sim = hepta.simulate(train_stats, "remove samples where engagement_seconds < 0.5")
+sim.show()
+# → removes 18% of data (22,423 samples)
+# → label entropy:              0.41 → 0.28  (noise reduced)
+# → class ratio:                1:16 → 1:11  (balance improved)
+# → train/eval JSD (engagement): 0.31 → 0.09  (skew resolved)
+# → estimated direction: NE ↓  AUC ↑
+
+sim2 = hepta.simulate(train_stats, "use only last 90 days of data")
+sim2.show()
+# → retains 39% of data
+# → temporal drift score:       0.41 → 0.09
+# → estimated direction: NE ↓  (freshness improvement)
+```
+
+### Domain Rule Registration
+
+```python
+# Extend universal detection with domain knowledge TFDV cannot infer.
+# Rules plug into the same detect → propose → approve → manifest flow.
+
+@hepta.rule
+def flag_non_impression_negatives(sample):
+    # In recommendation: non-impression samples are not true negatives
+    if sample["label"] == 0 and sample["impression_flag"] == 0:
+        return hepta.Action.DOWNWEIGHT
     return None
+
+@hepta.rule
+def low_engagement_noise(sample):
+    if sample["engagement_seconds"] < 0.5:
+        return hepta.Action.FILTER   # accidental tap, not real intent
+    return None
+
+# Pass rules into detect_issues — they surface as Issues with same
+# directional impact display as universal detectors
+issues = hepta.detect_issues(train_stats, rules=[
+    flag_non_impression_negatives,
+    low_engagement_noise,
+])
+```
+
+### Optional: Higher-Fidelity Detection with Model
+
+```python
+# If a trained model is available, use gradient signals for deeper detection
+# (not required — works without a model)
+issues = hepta.detect_issues(train_stats, model=my_model)
 ```
 
 Base policy weights download on first run. Domain-adaptive layer fine-tunes locally per team. Data never leaves the customer's machine.
 
-**Rule registration API** allows teams to encode domain knowledge HeptaAI cannot infer automatically. Rules integrate with the same detect → propose → approve → manifest flow as universal detectors. Over time, anonymized rule templates accumulate per vertical (e-commerce, fintech, food delivery) and ship as opt-in template libraries for new customers.
+**Rule template library:** Over time, anonymized rule templates accumulate per vertical (e-commerce, fintech, food delivery) and ship as opt-in presets. New customers in a vertical adopt templates instead of writing rules from scratch — the library compounds with each new customer.
 
 ---
 
 ## The 10-Minute Demo
 
 ```python
-# Baseline
-model_baseline = train(raw_data)                        # AUC: 0.821
+import heptaai as hepta
 
-# HeptaAI
-report = opt.diagnose("train.csv", test="test.csv", label_col="target")
-manifest = report.apply()
-model_hepta = train(manifest.apply(raw_data))           # AUC: 0.836
+# ── 1. Profile ───────────────────────────────────────────────────────────
+train_stats = hepta.generate_statistics("train.csv", label_col="click")
+eval_stats  = hepta.generate_statistics("eval.csv",  label_col="click")
+hepta.visualize_statistics(lhs=train_stats, rhs=eval_stats,
+                           lhs_name="TRAIN", rhs_name="EVAL")
 
-# 71% of original data, explainable manifest, no model changes
+# ── 2. Detect issues ─────────────────────────────────────────────────────
+issues = hepta.detect_issues(train_stats, serving_statistics=eval_stats)
+hepta.display_issues(issues)
+
+# ── 3. Generate manifest (human approves) ────────────────────────────────
+manifest = hepta.generate_manifest(train_stats, issues)
+manifest.summary()
+# → 3 fixes applied, estimated direction: NE ↓  AUC ↑
+
+# ── 4. Train both models ─────────────────────────────────────────────────
+model_baseline = train(raw_data)               # NE: 0.981  AUC: 0.762
+model_hepta    = train(manifest.apply(raw_data))  # NE: 0.954  AUC: 0.779
+
+# Same model architecture. Same training code. Only the data changed.
 ```
 
-Two numbers, one comparison, one manifest that explains every decision.
+Two metrics, one comparison, every fix explained. No model changes, no architecture changes.
 
 ---
 
