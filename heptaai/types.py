@@ -25,7 +25,8 @@ class IssueType(Enum):
     """Types of data quality issues detected in v0.1."""
     HIGH_NULL_RATE = "missing_values"
     DUPLICATE_SAMPLES = "duplicates"
-    SCHEMA_VIOLATION = "schema_violation"
+    SCHEMA_VIOLATION = "schema_violation"  # Unexpected categories, type mismatches
+    OUT_OF_RANGE = "out_of_range"  # Numeric values outside training min/max
     TRAIN_TEST_SKEW = "train_test_skew"
     CLASS_IMBALANCE = "class_imbalance"
 

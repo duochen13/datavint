@@ -1,6 +1,9 @@
 # Playground directory (validation scripts, experiments)
 playground/
 
+# Superpowers plugin
+.superpowers/
+
 # Python
 __pycache__/
 *.py[cod]

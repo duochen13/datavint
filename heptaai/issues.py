@@ -10,6 +10,7 @@ from .types import DatasetStatistics, Issue
 from .detectors.missing_values import MissingValuesDetector
 from .detectors.duplicates import DuplicatesDetector
 from .detectors.schema import SchemaViolationDetector
+from .detectors.range import NumericRangeDetector
 from .detectors.skew import TrainTestSkewDetector
 from .detectors.imbalance import ClassImbalanceDetector
 
@@ -21,12 +22,13 @@ def detect_issues(
     """
     Detect all data quality issues from statistics.
 
-    Runs all 5 detectors in v0.1:
+    Runs all 6 detectors in v0.1:
     1. MissingValuesDetector - Features with high null rates
     2. DuplicatesDetector - Exact duplicate rows
-    3. SchemaViolationDetector - Unexpected values, out-of-range data
-    4. TrainTestSkewDetector - Distribution shift between train and test
-    5. ClassImbalanceDetector - Extreme class imbalance
+    3. SchemaViolationDetector - Type mismatches, unexpected categorical values
+    4. NumericRangeDetector - Numeric values outside training min/max range
+    5. TrainTestSkewDetector - Distribution shift between train and test
+    6. ClassImbalanceDetector - Extreme class imbalance
 
     Args:
         statistics: Training dataset statistics (required)
@@ -54,6 +56,7 @@ def detect_issues(
         MissingValuesDetector(),
         DuplicatesDetector(),
         SchemaViolationDetector(),
+        NumericRangeDetector(),
         TrainTestSkewDetector(),
         ClassImbalanceDetector(),
     ]

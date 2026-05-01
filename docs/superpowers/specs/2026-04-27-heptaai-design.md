@@ -1,13 +1,36 @@
 # HeptaAI — Product Design Spec
 
-**Date:** 2026-04-28
+**Date:** 2026-04-29 (Revised after engineering review)
 **Stage:** Pre-seed / MVP
+**Version:** 2.0
 
 ---
 
 ## One-Sentence Pitch
 
 > "We automatically optimize your training data distribution to improve model performance without changing your model."
+
+---
+
+## Engineering Review Summary (2026-04-29)
+
+**Key improvements based on technical review:**
+
+1. **✅ Simplified MVP scope** - Start with 5 issue types (v0.1), not 20. Expand to 10 (v0.2), then 20 (v1.0).
+2. **✅ Python dataclasses instead of protocol buffers** - Avoids platform dependencies, Apple Silicon issues.
+3. **✅ Clarified manifest.apply() behavior** - Three explicit modes: reweight/filter/separate.
+4. **✅ Added error handling strategy** - Type hints, error scenarios, logging.
+5. **✅ Added testing strategy** - 80% coverage target, unit/integration/benchmark tests.
+6. **✅ Added performance targets** - Latency budgets for 10K/100K/1M/10M rows.
+7. **✅ Deferred policy learning to v1.0** - Ship hardcoded rules in v0.1/v0.2 (4-6 weeks faster).
+8. **✅ Added streaming support roadmap** - v0.1 in-memory only, v1.0 adds chunking for large files.
+9. **✅ Added versioning roadmap** - Clear v0.1 → v0.2 → v1.0 → v2.0 progression.
+10. **✅ Added risk assessment** - High/medium/low risks with concrete mitigations.
+
+**Trade-offs accepted:**
+- No TFDV proto compatibility → Gain simplicity and platform support
+- No learned policy in MVP → Ship 4-6 weeks faster
+- 5 issues instead of 20 → Tighter focus, easier to test and validate
 
 ---
 
@@ -234,9 +257,57 @@ The output is always a manifest. This is what separates HeptaAI from TFDV: TFDV 
 
 ---
 
-## Policy Architecture: Two Tiers
+## Policy Architecture: Progressive Sophistication
 
-The prescription engine is powered by a learned policy, not static rules.
+### v0.1 + v0.2: Hardcoded Rules Only
+
+**Goal:** Validate core value prop before building learning infrastructure.
+
+Fixed thresholds based on ML best practices:
+```python
+class DefaultPolicy:
+    """Hardcoded rules - no learning yet."""
+
+    THRESHOLDS = {
+        "missing_values": {
+            "high_threshold": 0.5,   # >50% null → filter
+            "low_threshold": 0.05,   # <5% null → impute median
+        },
+        "class_imbalance": {
+            "min_positive_rate": 0.01,  # <1% positive → upsample
+            "target_ratio": 0.1,         # Target 10% positive rate
+        },
+        "train_test_skew": {
+            "js_threshold": 0.1,  # JS divergence > 0.1 → reweight
+        },
+        "duplicates": {
+            "action": "keep_first",  # Keep first occurrence
+        },
+    }
+
+    def handle_missing_values(self, feature, null_rate):
+        if null_rate > self.THRESHOLDS["missing_values"]["high_threshold"]:
+            return Action.FILTER
+        elif null_rate > self.THRESHOLDS["missing_values"]["low_threshold"]:
+            return Action.IMPUTE_MEDIAN
+        return Action.NONE
+```
+
+Users can override thresholds:
+```python
+manifest = hepta.generate_manifest(
+    train_stats,
+    issues,
+    policy_overrides={
+        "missing_values": {"high_threshold": 0.3},
+        "train_test_skew": {"js_threshold": 0.05}
+    }
+)
+```
+
+**Trade-off:** No learned policy yet, but 4-6 weeks faster to ship.
+
+### v1.0: Two-Tier Learned Policy
 
 **Tier 1 — Universal Base Policy (pre-trained, ships in SDK)**
 Operations that generalize across all domains:
@@ -246,7 +317,7 @@ Operations that generalize across all domains:
 - Label entropy flagging
 - Class imbalance correction
 
-Pre-trained on aggregate anonymized proxy signals across all customers. Works day 1. Cross-customer learning is the moat.
+Pre-trained on public benchmark datasets (Criteo, MovieLens, RecSys). Works day 1. Cross-customer learning accumulates over time.
 
 **Tier 2 — Domain-Adaptive Layer (fine-tunes per team)**
 Learns what "reliable sample" means for this specific team's data:
@@ -255,7 +326,7 @@ Learns what "reliable sample" means for this specific team's data:
 - Stored locally — never shared, data never leaves
 - Each team within a company gets their own instance
 
-This also solves the "different pipelines per team" problem: each team runs their own SDK instance with their own domain-adaptive layer. No central standardization required.
+This solves the "different pipelines per team" problem: each team runs their own SDK instance with their own domain-adaptive layer. No central standardization required.
 
 | RL concept | HeptaAI equivalent |
 |---|---|
@@ -363,6 +434,80 @@ Loop 2 is the engine. Loop 1 is the fuel. Loop 3 is the calibration instrument.
 
 Designed to feel familiar to engineers who know TFDV, while extending the workflow to the steps TFDV stops before.
 
+### Architecture Decisions
+
+**Statistics Format: Python Dataclasses (Not Protocol Buffers)**
+
+Unlike TFDV, HeptaAI uses native Python dataclasses instead of protocol buffers for statistics representation. This decision prioritizes:
+- Zero platform dependencies (no protoc compiler required)
+- Apple Silicon compatibility (no binary wheel issues)
+- Simple pip install experience
+- Native Python IDE autocomplete and type checking
+
+Trade-off: We lose binary TFDV proto compatibility, but gain simplicity and broader platform support. Users can serialize to JSON for persistence.
+
+### Recommended Package Structure
+
+```
+heptaai/
+├── __init__.py                 # Top-level API exports
+├── statistics.py               # generate_statistics()
+├── issues.py                   # detect_issues(), Issue dataclass
+├── manifest.py                 # Manifest class, generate_manifest()
+├── visualization.py            # display_issues(), visualize_statistics()
+├── feedback.py                 # record_feedback() (v1.0)
+│
+├── detectors/
+│   ├── __init__.py
+│   ├── base.py                # BaseDetector abstract class
+│   ├── missing_values.py      # v0.1
+│   ├── duplicates.py          # v0.1
+│   ├── schema.py              # v0.1
+│   ├── skew.py                # v0.1
+│   ├── imbalance.py           # v0.1
+│   ├── near_duplicates.py     # v0.2
+│   ├── label_noise.py         # v0.2
+│   └── ...                    # v1.0: expand to 20 detectors
+│
+├── policies/
+│   ├── __init__.py
+│   ├── base.py                # BasePolicy abstract class
+│   ├── default.py             # Hardcoded rules (v0.1, v0.2)
+│   ├── learned.py             # Contextual bandit (v1.0)
+│   └── domain_adaptive.py     # Per-team fine-tuning (v1.0)
+│
+├── utils/
+│   ├── __init__.py
+│   ├── statistics.py          # Histogram, percentiles, JS divergence
+│   ├── validation.py          # Schema validation helpers
+│   └── streaming.py           # Chunked processing (v1.0)
+│
+├── types.py                   # Dataclasses: DatasetStatistics, Issue, Manifest
+└── config.py                  # Configuration, thresholds, logging
+
+tests/
+├── test_statistics.py
+├── test_detectors/
+│   ├── test_missing_values.py
+│   ├── test_duplicates.py
+│   └── ...
+├── test_manifest.py
+├── test_integration.py        # End-to-end on MovieLens/Criteo
+└── fixtures/
+    ├── movielens_train.csv
+    └── movielens_anomalous.csv
+
+benchmarks/
+└── bench_statistics.py        # Performance regression tracking
+```
+
+**Estimated complexity:**
+- v0.1: ~12 files, ~8 classes
+- v0.2: ~18 files, ~12 classes
+- v1.0: ~25+ files, ~20+ classes
+
+This exceeds typical "simple library" scope but is manageable for an MVP with strong separation of concerns.
+
 | TFDV step | HeptaAI equivalent | What's new |
 |---|---|---|
 | `generate_statistics_from_csv()` | `hepta.generate_statistics()` | adds label entropy per segment |
@@ -379,12 +524,22 @@ Designed to feel familiar to engineers who know TFDV, while extending the workfl
 ```python
 pip install heptaai
 import heptaai as hepta
+from pathlib import Path
+from typing import Optional, List, Union
+import pandas as pd
 
 # ── Step 1: Generate statistics ──────────────────────────────────────────
 # Per-feature: count, missing%, mean, p50, p99, median, distribution
 # + label entropy per feature segment (TFDV does not compute this)
-train_stats = hepta.generate_statistics("train.csv", label_col="click")
-eval_stats  = hepta.generate_statistics("eval.csv",  label_col="click")
+# Returns: DatasetStatistics (Python dataclass, not proto)
+train_stats: hepta.DatasetStatistics = hepta.generate_statistics(
+    "train.csv",
+    label_col="click"
+)
+eval_stats: hepta.DatasetStatistics = hepta.generate_statistics(
+    "eval.csv",
+    label_col="click"
+)
 
 # ── Step 2: Visualize ────────────────────────────────────────────────────
 # Single dataset — per-feature stats + issue badges
@@ -423,11 +578,30 @@ manifest.summary()
 # → estimated direction: NE ↓  AUC ↑
 
 # ── Step 5: Apply and train ──────────────────────────────────────────────
-clean_df = manifest.apply("train.csv")   # returns weighted DataFrame
-manifest.save("manifest.json")           # or export for external pipelines
+# manifest.apply() has three modes - user chooses behavior explicitly:
 
-# ── Step 6: Feedback (optional) ──────────────────────────────────────────
-hepta.record_feedback(manifest, improved=True, auc_delta=0.017)
+# Mode A: Reweight (adds sample_weight column, preserves all rows)
+weighted_df = manifest.apply("train.csv", mode="reweight")
+# weighted_df.shape = (80668, 9)  # Same rows, +1 column: "_sample_weight"
+# Use with model.fit(X, y, sample_weight=weighted_df["_sample_weight"])
+
+# Mode B: Filter (removes rows with weight=0, no weight column)
+filtered_df = manifest.apply("train.csv", mode="filter")
+# filtered_df.shape = (72000, 8)  # Some rows removed
+
+# Mode C: Separate outputs (cleanest for PyTorch DataLoader)
+weights: pd.Series = manifest.get_weights("train.csv")  # 1D array
+mask: pd.Series = manifest.get_filter_mask("train.csv")  # Boolean array
+df_clean = df[mask]  # Apply filter manually
+
+manifest.save("manifest.json")  # Export for external pipelines
+
+# ── Step 6: Feedback (optional, v1.0+) ──────────────────────────────────
+hepta.record_feedback(
+    manifest,
+    improved=True,
+    auc_delta=0.017  # Optional: helps calibrate proxy signals
+)
 ```
 
 ### Mode 1 — Fix Known Issues (shortcut)
@@ -510,6 +684,235 @@ Base policy weights download on first run. Domain-adaptive layer fine-tunes loca
 
 ---
 
+## Error Handling & API Contracts
+
+### Type Signatures (All Public APIs)
+
+```python
+from typing import Union, Optional, List, Literal
+from pathlib import Path
+from dataclasses import dataclass
+import pandas as pd
+
+def generate_statistics(
+    data: Union[str, Path, pd.DataFrame],
+    label_col: Optional[str] = None,
+    chunksize: Optional[int] = None  # For large files (>1GB)
+) -> DatasetStatistics:
+    """
+    Generate statistics from training data.
+
+    Args:
+        data: DataFrame or path to CSV file
+        label_col: Target column name (None for unsupervised)
+        chunksize: Process in chunks for large files
+
+    Returns:
+        DatasetStatistics dataclass
+
+    Raises:
+        FileNotFoundError: If path doesn't exist
+        ValueError: If DataFrame has 0 rows
+        KeyError: If label_col not in DataFrame columns
+    """
+
+def detect_issues(
+    statistics: DatasetStatistics,
+    serving_statistics: Optional[DatasetStatistics] = None,
+    schema: Optional[Schema] = None
+) -> List[Issue]:
+    """
+    Detect data quality issues.
+
+    Returns:
+        List of Issue objects (empty list if no issues, NOT None)
+    """
+
+def generate_manifest(
+    statistics: DatasetStatistics,
+    issues: List[Issue],
+    default_policy: Literal["filter", "downsample", "reweight"] = "reweight"
+) -> Manifest:
+    """
+    Generate manifest from detected issues.
+
+    Raises:
+        ValueError: If issues list is empty (no fixes to apply)
+    """
+```
+
+### Error Scenarios
+
+| Scenario | Behavior |
+|---|---|
+| Empty DataFrame (0 rows) | Raise `ValueError("Cannot generate statistics from empty DataFrame")` |
+| Missing label column | Raise `KeyError(f"Label column '{label_col}' not found")` |
+| All null column | Log warning, include in statistics with `null_rate=100%` |
+| No issues detected | `detect_issues()` returns `[]` (empty list) |
+| Empty issues list | `generate_manifest()` raises `ValueError("No issues to fix")` |
+| File too large (>10GB) | Log warning: "Large file detected, consider using chunksize parameter" |
+
+### Logging Strategy
+
+```python
+import logging
+
+logger = logging.getLogger("heptaai")
+
+# User-facing progress logging
+def generate_statistics(data, label_col=None):
+    logger.info(f"Computing statistics for {len(data):,} rows...")
+    # ... computation
+    logger.info(f"Generated statistics for {len(stats.features)} features")
+
+def apply(self, data_path, mode="reweight"):
+    n_filtered = (self.filter_mask == False).sum()
+    if n_filtered > 0.1 * len(self.filter_mask):
+        logger.warning(
+            f"⚠️  Manifest will {'filter' if mode=='filter' else 'downweight'} "
+            f"{n_filtered:,} rows ({n_filtered/len(self.filter_mask):.1%} of data)"
+        )
+```
+
+---
+
+## Testing Strategy
+
+### Coverage Requirements
+
+**Minimum 80% code coverage** (pytest-cov)
+
+### Test Categories
+
+**1. Unit Tests (tests/test_*.py)**
+
+Each issue detector gets 3+ test cases:
+```python
+# tests/test_missing_values.py
+def test_detect_missing_values_high_rate():
+    """Missing rate > threshold triggers issue."""
+    df = pd.DataFrame({"col1": [1, 2, None, None, None]})  # 60% null
+    stats = hepta.generate_statistics(df)
+    issues = hepta.detect_issues(stats)
+    assert len(issues) == 1
+    assert issues[0].type == "HIGH_NULL_RATE"
+    assert issues[0].severity == "high"
+
+def test_detect_missing_values_acceptable_rate():
+    """Missing rate < threshold is OK."""
+    df = pd.DataFrame({"col1": [1, 2, None, 4, 5]})  # 20% null
+    stats = hepta.generate_statistics(df)
+    issues = hepta.detect_issues(stats)
+    assert len(issues) == 0
+
+def test_missing_values_all_null():
+    """100% null column is flagged."""
+    df = pd.DataFrame({"col1": [None] * 100})
+    stats = hepta.generate_statistics(df)
+    issues = hepta.detect_issues(stats)
+    assert any(i.type == "HIGH_NULL_RATE" for i in issues)
+```
+
+**2. Integration Tests (tests/test_integration.py)**
+
+End-to-end pipeline on real datasets:
+```python
+def test_end_to_end_movielens():
+    """Full pipeline on MovieLens anomalous data."""
+    train = pd.read_csv("tests/fixtures/movielens_anomalous.csv")
+    stats = hepta.generate_statistics(train, label_col="label")
+    issues = hepta.detect_issues(stats)
+
+    # Should detect known injected anomalies
+    issue_types = {i.type for i in issues}
+    assert "HIGH_NULL_RATE" in issue_types  # Missing genre (5%)
+    assert "OUTLIER_FEATURE" in issue_types  # Bot activity
+    assert "DUPLICATE_SAMPLES" in issue_types  # Duplicates
+
+    # Manifest generation should succeed
+    manifest = hepta.generate_manifest(stats, issues)
+    assert manifest is not None
+
+    # Apply should not crash
+    weighted_df = manifest.apply(train, mode="reweight")
+    assert "_sample_weight" in weighted_df.columns
+```
+
+**3. Performance Benchmarks (benchmarks/bench_*.py)**
+
+```python
+import time
+
+def bench_generate_statistics():
+    """Statistics generation latency targets."""
+
+    # 100K rows - must complete in <5s
+    df = load_criteo_sample(100_000)
+    start = time.time()
+    stats = hepta.generate_statistics(df, label_col="click")
+    elapsed = time.time() - start
+
+    assert elapsed < 5.0
+    print(f"✅ 100K rows: {elapsed:.2f}s ({100_000/elapsed:.0f} rows/sec)")
+
+    # 1M rows - must complete in <60s
+    df = load_criteo_sample(1_000_000)
+    start = time.time()
+    stats = hepta.generate_statistics(df, label_col="click")
+    elapsed = time.time() - start
+
+    assert elapsed < 60.0
+    print(f"✅ 1M rows: {elapsed:.2f}s ({1_000_000/elapsed:.0f} rows/sec)")
+```
+
+---
+
+## Performance Targets
+
+### Latency Budgets
+
+| Dataset Size | Statistics Generation | Issue Detection | Manifest Apply |
+|---|---|---|---|
+| 10K rows | <500ms | <100ms | <200ms |
+| 100K rows | <5s | <1s | <2s |
+| 1M rows | <60s | <10s | <15s |
+| 10M rows | <10min* | <2min | <3min |
+
+*Requires `chunksize` parameter for streaming processing
+
+### Scalability Strategy
+
+**v0.1 (MVP): In-memory pandas only**
+- Target: Up to 1M rows (fits in 16GB RAM)
+- All processing in-memory
+- Simple, fast iteration
+
+**v0.2: Add streaming support**
+```python
+# For large CSV files (>1GB), process in chunks
+stats = hepta.generate_statistics(
+    "train.csv",
+    label_col="click",
+    chunksize=50_000  # Process 50K rows at a time
+)
+# Uses online algorithms (Welford's method) to compute statistics incrementally
+```
+
+**v1.0: Add Dask/Polars backends (optional)**
+- For 10M+ row datasets
+- Out-of-core processing
+- API stays the same, backend switches automatically based on data size
+
+### Memory Limits
+
+| Dataset Size | Peak Memory (approx) |
+|---|---|
+| 100K rows × 50 cols | ~400MB |
+| 1M rows × 50 cols | ~4GB |
+| 10M rows × 50 cols | ~40GB (requires chunking) |
+
+---
+
 ## The 10-Minute Demo
 
 ```python
@@ -538,6 +941,59 @@ model_hepta    = train(manifest.apply(raw_data))  # NE: 0.954  AUC: 0.779
 ```
 
 Two metrics, one comparison, every fix explained. No model changes, no architecture changes.
+
+---
+
+## Implementation Risks & Mitigation
+
+### High-Risk Items
+
+| Risk | Impact | Mitigation |
+|---|---|---|
+| **Protocol buffer dependency** | Platform lock-in, Apple Silicon failures, complex install | ✅ Use Python dataclasses instead. Serialize to JSON. |
+| **Large DataFrames (>1GB) OOM** | Cannot process production datasets | Defer to v1.0. v0.1 targets ≤1M rows (in-memory). v1.0 adds streaming. |
+| **Policy learning delays launch** | 4-6 week delay for bandit infrastructure | ✅ Ship hardcoded rules in v0.1/v0.2. Add learning in v1.0. |
+| **20 issue types over-engineered** | Dilutes MVP focus, hard to test | ✅ Start with 5 issues (v0.1), expand to 10 (v0.2), 20 (v1.0). |
+
+### Medium-Risk Items
+
+| Risk | Impact | Mitigation |
+|---|---|---|
+| **manifest.apply() behavior unclear** | User confusion: filter vs reweight? | ✅ Explicit `mode` parameter: "filter" / "reweight" / "separate". |
+| **No error handling strategy** | Silent failures, poor UX | ✅ Add comprehensive error handling (see Error Handling section). |
+| **No test suite** | Brittle code, hard to maintain | ✅ 80% coverage target, unit + integration + benchmarks. |
+| **JS divergence O(n²) for high-cardinality** | Slow on user_id/item_id columns | Skip JS if unique values >1000, or use sampling approximation. |
+
+### Low-Risk Items
+
+| Risk | Impact | Mitigation |
+|---|---|---|
+| **Type hints missing** | Poor IDE support | ✅ All APIs have full type annotations. |
+| **No logging** | Silent 30s+ operations confuse users | ✅ Add progress logging (see Logging Strategy). |
+| **Performance regressions** | Slow updates break trust | Add pytest-benchmark to CI, track perf over time. |
+
+### Backwards Compatibility Guarantee
+
+**Manifest format stability:**
+- v0.1 manifest.json format is the foundation
+- v0.2+ can READ v0.1 manifests (forward compatible)
+- Breaking changes require major version bump (v1→v2)
+
+```json
+{
+  "version": "0.1",
+  "created_at": "2026-05-15T10:30:00Z",
+  "issues_detected": 3,
+  "fixes": [
+    {
+      "issue_type": "class_imbalance",
+      "action": "reweight",
+      "sample_indices": [0, 1, 2, ...],
+      "weights": [14.3, 14.3, 1.0, ...]
+    }
+  ]
+}
+```
 
 ---
 
@@ -788,9 +1244,84 @@ Top issues confirmed from big tech engineering research:
 
 ---
 
+## MVP Versioning Strategy
+
+The full taxonomy specifies 20 issue types across 5 categories. This is over-engineered for MVP. Ship incrementally to validate core hypothesis first.
+
+### v0.1 — Core Detection (4 weeks)
+
+**Goal:** Prove that HeptaAI can detect real issues and that the detection is valuable.
+
+**Ship:**
+- `hepta.generate_statistics()` - pandas-based, in-memory only
+- `hepta.detect_issues()` - **5 issue types only** (highest impact):
+  1. **Missing values** (high null rate) - Universal pain point
+  2. **Duplicates** (exact row duplicates) - Confuses models
+  3. **Schema violations** (unexpected nulls, out-of-range values) - Pipeline errors
+  4. **Train-test skew** (JS divergence on 3 features max) - Serving mismatch
+  5. **Label imbalance** (positive rate) - Ranking/recommendation universal
+- `hepta.display_issues()` - Simple print-based output
+- **Python dataclasses** for statistics (NOT protocol buffers)
+- **Hardcoded policies** (no learning loop yet)
+
+**Explicitly defer:**
+- Manifest generation (no `generate_manifest()` yet)
+- All 15 other issue types
+- Visualization UI
+- Cross-customer learning
+- Feedback loop
+
+**Success metric:** 10 users run on their data, 8+ find at least one issue they didn't know about.
+
+### v0.2 — Prescription Engine (weeks 5-8)
+
+**Goal:** Prove that HeptaAI's prescriptions improve model performance.
+
+**Add:**
+- `hepta.generate_manifest()` - Issue list → sample weights + filter masks
+- `manifest.apply()` - Three modes (reweight/filter/separate)
+- **Expand to 10 issue types:**
+  - Add: Near-duplicates, label noise, temporal drift, underrepresented segments, feature-label correlation drop
+- Visualization with matplotlib (histograms, distribution comparisons)
+- Policy configuration API (`set_threshold()`, `ignore()`)
+
+**Validation:**
+- Run on Criteo dataset
+- Baseline AUC vs HeptaAI-manifest AUC
+- Target: +1-2% AUC improvement
+
+**Success metric:** 5 teams train models on manifests, 4+ see AUC improvement.
+
+### v1.0 — Learning & Scale (months 3-6)
+
+**Goal:** Prove that the policy improves with feedback and scales to production.
+
+**Add:**
+- Full 20-issue taxonomy
+- `hepta.record_feedback()` - Telemetry and feedback loop
+- Cross-customer aggregate learning (Loop 2)
+- Streaming/chunked processing for large files (10M+ rows)
+- Domain-adaptive policy layer (per-team fine-tuning)
+- Rule template library per vertical
+
+**Success metric:** 50+ customers, cross-customer policy outperforms hardcoded rules by 15%+.
+
+### v2.0+ — Enterprise & Expansion (Series A)
+
+- Mode 3: What-if simulation
+- PyTorch DataLoader wrapper
+- SaaS dashboard / UI
+- Air-gap mode (no telemetry)
+- Airflow/Feast integrations
+- LLM fine-tuning data quality
+
+---
+
 ## MVP 1 — Concrete Scope & Validation Plan
 
-MVP 1 is not the full product. It is the proof: **applying specific data fixes measurably improves model performance on a real dataset.**
+MVP 1 = **v0.1 + v0.2 combined** (8 weeks total)
+
+The proof: **applying specific data fixes measurably improves model performance on a real dataset.**
 
 ### Dataset
 **Criteo CTR Kaggle dataset** (45M rows, 13 continuous + 26 categorical features, binary click label). Industry standard benchmark for CTR/recommendation models. Known issues: ~3–7% positive rate, -1 coded missing values, near-duplicate impression rows, categorical train/test distribution shift. Publicly reproducible — any reviewer can run the same experiment.
@@ -845,12 +1376,14 @@ Retrain both LR and MLP on manifest-applied data. Confirm NE and AUC moved in th
 Two models, same direction of improvement → model-agnostic claim holds.
 
 ### What MVP 1 Is Not
-- Not the contextual bandit policy (that is v2)
-- Not cross-customer learning (that is v2)
-- Not Mode 3 what-if simulation (that is v1 stretch goal)
-- Not a UI or dashboard (that is v2)
+- Not the contextual bandit policy (v1.0)
+- Not cross-customer learning (v1.0)
+- Not Mode 3 what-if simulation (v2.0+)
+- Not a UI or dashboard (v2.0+)
+- Not streaming/chunked processing (v1.0)
+- Not all 20 issue types (start with 5 in v0.1, expand to 10 in v0.2)
 
-MVP 1 proves one thing: **HeptaAI-optimized training data produces better models than raw data, reproducibly, on an industry benchmark.**
+MVP 1 (v0.1 + v0.2) proves one thing: **HeptaAI-optimized training data produces better models than raw data, reproducibly, on an industry benchmark.**
 
 ---
 
@@ -956,11 +1489,48 @@ Quantitative estimates become available in MVP 2 once Loop 3 (model delta calibr
 
 ## Roadmap
 
-| Phase | What ships | Differentiator |
-|---|---|---|
-| **v1 (MVP)** | SDK + universal detectors + rule registration API + TFDV-style profiler + directional prescriptions + manifest + human-in-the-loop approval + LR/MLP validation on Criteo | Detect AND prescribe AND validate — with domain rule extensibility from day 1 |
-| **v2** | Contextual bandit policy + quantitative impact estimates + DataLoader wrapper + dashboard + label advisor | Learned policy, automation, stickiness |
-| **Series A** | Cross-customer learning + on-prem + LLM fine-tune support + per-customer policy dashboard + integrations (Airflow, Feast) | Enterprise + expansion |
+| Phase | Timeline | What ships | Success metric |
+|---|---|---|---|
+| **v0.1** | Weeks 1-4 | Statistics + 5 issue detectors + display | 10 users try it, 8+ find unknown issues |
+| **v0.2** | Weeks 5-8 | Manifest generation + apply + 10 issue types + validation on Criteo | 5 teams see AUC improvement |
+| **v1.0** | Months 3-6 | Full 20 issues + feedback loop + streaming + learned policy + cross-customer learning | 50+ customers, policy beats hardcoded rules |
+| **v2.0** | Series A | Mode 3 simulation + PyTorch wrapper + dashboard + air-gap mode + integrations | $5M ARR, 100+ enterprise customers |
+
+### Detailed Feature Timeline
+
+**v0.1 (4 weeks) — Detection Only**
+- [x] `generate_statistics()` - pandas-based, in-memory
+- [x] `detect_issues()` - 5 issue types (missing values, duplicates, schema, skew, imbalance)
+- [x] `display_issues()` - print-based output
+- [x] Python dataclasses (no protos)
+- [x] Type hints on all APIs
+- [x] Error handling + logging
+- [x] Unit tests (80% coverage)
+
+**v0.2 (weeks 5-8) — Prescription**
+- [ ] `generate_manifest()` + `manifest.apply()`
+- [ ] Three apply modes (reweight/filter/separate)
+- [ ] Expand to 10 issue types
+- [ ] Matplotlib visualization
+- [ ] Policy override API (`set_threshold()`)
+- [ ] Integration tests on Criteo
+- [ ] Performance benchmarks
+
+**v1.0 (months 3-6) — Learning**
+- [ ] Full 20-issue taxonomy
+- [ ] `record_feedback()` + telemetry
+- [ ] Contextual bandit policy (Loop 2)
+- [ ] Streaming/chunked processing
+- [ ] Domain-adaptive layer
+- [ ] Rule template library
+
+**v2.0 (Series A) — Enterprise**
+- [ ] Mode 3: What-if simulation
+- [ ] PyTorch DataLoader wrapper
+- [ ] SaaS dashboard
+- [ ] Air-gap mode
+- [ ] Airflow/Feast/dbt integrations
+- [ ] LLM fine-tuning data quality
 
 ---
 
