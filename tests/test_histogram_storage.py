@@ -272,6 +272,109 @@ class TestEdgeCases:
         assert const_stats.histogram is not None
 
 
+class TestAdaptiveBinning:
+    """Test adaptive histogram binning based on dataset size."""
+
+    def test_small_dataset_uses_10_bins(self):
+        """Small datasets (< 1000 rows) should use 10 bins."""
+        df = pd.DataFrame({
+            "value": np.random.randn(500),  # 500 rows
+        })
+
+        stats = generate_statistics(df)
+        hist = stats.features["value"].histogram
+
+        # Should have 10 bins (11 edges)
+        assert len(hist["edges"]) == 11, f"Expected 11 edges (10 bins), got {len(hist['edges'])}"
+        assert len(hist["counts"]) == 10, f"Expected 10 counts, got {len(hist['counts'])}"
+
+    def test_medium_dataset_uses_20_bins(self):
+        """Medium datasets (1K - 100K rows) should use 20 bins."""
+        df = pd.DataFrame({
+            "value": np.random.randn(5000),  # 5K rows
+        })
+
+        stats = generate_statistics(df)
+        hist = stats.features["value"].histogram
+
+        # Should have 20 bins (21 edges)
+        assert len(hist["edges"]) == 21, f"Expected 21 edges (20 bins), got {len(hist['edges'])}"
+        assert len(hist["counts"]) == 20, f"Expected 20 counts, got {len(hist['counts'])}"
+
+    def test_large_dataset_uses_sturges_rule(self):
+        """Large datasets (> 100K rows) should use Sturges' rule, capped at 50."""
+        # 1M rows → log2(1M) + 1 ≈ 20 bins (within cap)
+        df = pd.DataFrame({
+            "value": np.random.randn(1_000_000),
+        })
+
+        stats = generate_statistics(df)
+        hist = stats.features["value"].histogram
+
+        # Sturges' rule: ceil(log2(1M) + 1) = ceil(19.93 + 1) = 20 bins
+        expected_bins = int(np.log2(1_000_000) + 1)
+        expected_bins = min(50, expected_bins)  # Capped at 50
+
+        assert len(hist["counts"]) == expected_bins, \
+            f"Expected {expected_bins} bins for 1M rows, got {len(hist['counts'])}"
+
+    def test_bin_count_consistency_across_features(self):
+        """All numeric features in the same dataset should use same bin count."""
+        df = pd.DataFrame({
+            "feature1": np.random.randn(2000),
+            "feature2": np.random.randn(2000),
+            "feature3": np.random.randn(2000),
+        })
+
+        stats = generate_statistics(df)
+
+        # All should use 20 bins (2000 rows → medium dataset)
+        for feat_name in ["feature1", "feature2", "feature3"]:
+            hist = stats.features[feat_name].histogram
+            assert len(hist["counts"]) == 20, \
+                f"{feat_name} should have 20 bins, got {len(hist['counts'])}"
+
+    def test_categorical_features_unaffected(self):
+        """Categorical features should store all values (no binning)."""
+        df = pd.DataFrame({
+            "country": ["US", "UK", "CA"] * 200,  # 600 rows, categorical
+            "age": list(range(600)),  # 600 rows, numeric
+        })
+
+        stats = generate_statistics(df)
+
+        # Categorical: stores value_counts (not binned)
+        cat_hist = stats.features["country"].histogram
+        assert "value_counts" in cat_hist
+        assert len(cat_hist["value_counts"]) == 3  # US, UK, CA
+
+        # Numeric: uses 10 bins (600 rows → small dataset)
+        num_hist = stats.features["age"].histogram
+        assert "counts" in num_hist
+        assert len(num_hist["counts"]) == 10
+
+    def test_boundary_conditions(self):
+        """Test bin counts at exact boundary values."""
+        test_cases = [
+            (999, 10),    # Just below 1K → 10 bins
+            (1000, 20),   # Exactly 1K → 20 bins
+            (100_000, 20),  # Exactly 100K → 20 bins
+            (100_001, 17),  # Just above 100K → Sturges (log2(100001) + 1 ≈ 17)
+        ]
+
+        for n_rows, expected_bins in test_cases:
+            df = pd.DataFrame({
+                "value": np.random.randn(n_rows),
+            })
+
+            stats = generate_statistics(df)
+            hist = stats.features["value"].histogram
+            actual_bins = len(hist["counts"])
+
+            assert actual_bins == expected_bins, \
+                f"For {n_rows:,} rows: expected {expected_bins} bins, got {actual_bins}"
+
+
 if __name__ == "__main__":
     # Allow running directly with: python test_histogram_storage.py
     pytest.main([__file__, "-v"])

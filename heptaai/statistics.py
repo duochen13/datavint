@@ -3,6 +3,13 @@ Statistics generation for datasets.
 
 This module implements the generate_statistics() function, which computes
 per-feature statistics and global dataset metrics.
+
+Adaptive Histogram Binning:
+- Histogram bin counts adapt to dataset size for optimal resolution vs memory
+- Small datasets (< 1K rows): 10 bins (avoid over-binning sparse data)
+- Medium datasets (1K - 100K rows): 20 bins (standard resolution)
+- Large datasets (> 100K rows): Sturges' rule (log2(n) + 1), capped at 50 bins
+- Rationale: Balances distribution fidelity with memory efficiency
 """
 
 from typing import Union, Optional
@@ -13,6 +20,45 @@ from scipy.stats import entropy
 
 from .types import DatasetStatistics, FeatureStats
 from .config import logger
+
+
+def _compute_adaptive_bins(n_rows: int) -> int:
+    """
+    Compute adaptive bin count based on dataset size.
+
+    Strategy:
+    - Small datasets (< 1000 rows): 10 bins (avoid over-binning sparse data)
+    - Medium datasets (1000 - 100K rows): 20 bins (standard resolution)
+    - Large datasets (> 100K rows): Sturges' rule, capped at 50 bins
+
+    Sturges' rule: bins = ceil(log2(n) + 1)
+    - Balances resolution with memory usage
+    - 100K rows → 17 bins
+    - 1M rows → 20 bins
+    - 10M rows → 24 bins
+
+    Args:
+        n_rows: Number of rows in dataset
+
+    Returns:
+        Number of bins to use for histogram
+
+    Example:
+        >>> _compute_adaptive_bins(500)
+        10
+        >>> _compute_adaptive_bins(50000)
+        20
+        >>> _compute_adaptive_bins(1000000)
+        20
+    """
+    if n_rows < 1000:
+        return 10
+    elif n_rows <= 100000:
+        return 20
+    else:
+        # Sturges' rule: log2(n) + 1, capped at 50
+        sturges_bins = int(np.log2(n_rows) + 1)
+        return min(50, sturges_bins)
 
 
 def generate_statistics(
@@ -63,13 +109,14 @@ def generate_statistics(
     duplicate_count = df.duplicated().sum()
     duplicate_rate = duplicate_count / len(df)
 
-    # 4. Compute per-feature stats
+    # 4. Compute per-feature stats (with adaptive binning based on row count)
     features = {}
+    n_rows = len(df)
     for col in df.columns:
         if col == label_col:
             continue  # Skip label column in feature stats
 
-        features[col] = _compute_feature_stats(df, col)
+        features[col] = _compute_feature_stats(df, col, n_rows)
 
     # 5. Compute global label statistics (if label_col provided)
     label_rate = None
@@ -95,13 +142,14 @@ def generate_statistics(
     )
 
 
-def _compute_feature_stats(df: pd.DataFrame, col: str) -> FeatureStats:
+def _compute_feature_stats(df: pd.DataFrame, col: str, n_rows: int) -> FeatureStats:
     """
     Compute statistics for a single feature.
 
     Args:
         df: DataFrame
         col: Column name
+        n_rows: Total number of rows in dataset (for adaptive binning)
 
     Returns:
         FeatureStats with computed statistics
@@ -118,8 +166,9 @@ def _compute_feature_stats(df: pd.DataFrame, col: str) -> FeatureStats:
         # Numeric feature
         s_clean = s.dropna()
         if len(s_clean) > 0:
-            # Store histogram for skew detection
-            hist_counts, hist_edges = np.histogram(s_clean, bins=20)
+            # Store histogram for skew detection (adaptive bin count)
+            bins = _compute_adaptive_bins(n_rows)
+            hist_counts, hist_edges = np.histogram(s_clean, bins=bins)
             histogram = {
                 "counts": hist_counts.tolist(),
                 "edges": hist_edges.tolist(),
