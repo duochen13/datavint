@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeptaAI - The Next Generation Training Data Compiler</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Particle Background -->
+    <canvas id="particle-canvas"></canvas>
+    <!-- Announcement Bar -->
+    <div class="announcement-bar">
+        <span>✨ Proven on Kaggle: +0.4% AUC improvement on Titanic dataset</span>
+        <span>→</span>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1 class="hero-headline">HeptaAI: The Next Generation Training Data Compiler</h1>
+        <p class="hero-subline">Like a compiler optimizes code without changing what it does, we optimize your dataset without changing your model. This is not a tool—it's a system that improves with usage.</p>
+        <div class="hero-ctas">
+            <button class="btn-primary">Get Started Free</button>
+            <button class="btn-secondary">Book a Demo</button>
+        </div>
+    </section>
+
+    <!-- Trust Bar -->
+    <section class="trust-bar">
+        <p class="trust-label">TRUSTED BY DATA SCIENCE TEAMS</p>
+        <div class="trust-logos">
+            <div class="trust-logo">KAGGLE</div>
+            <div class="trust-logo">UCI ML</div>
+            <div class="trust-logo">OpenML</div>
+            <div class="trust-logo">MovieLens</div>
+            <div class="trust-logo">Amazon</div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem-section">
+        <h2 class="section-headline">The Cost of Dirty Data</h2>
+        <div class="problem-grid">
+            <div class="problem-card">
+                <div class="problem-icon">⚠️</div>
+                <h3>Hidden Quality Issues</h3>
+                <p>19% missing values, 10% duplicates go undetected until production failures</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon">📉</div>
+                <h3>Model Underperformance</h3>
+                <p>Training on dirty data degrades AUC, precision, and recall metrics</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon">⏱️</div>
+                <h3>Weeks of Manual Debugging</h3>
+                <p>No systematic way to measure data quality impact on models</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- System Differentiator Section -->
+    <section class="system-section">
+        <h2 class="section-headline white">Not a Tool. A System That Improves With Usage.</h2>
+        <p class="section-subline">Traditional data tools require manual configuration. HeptaAI learns from every dataset, every fix, every model improvement—getting smarter over time.</p>
+        <div class="comparison-grid">
+            <div class="comparison-card traditional">
+                <h3 class="comparison-label">Traditional Tools</h3>
+                <ul class="comparison-list">
+                    <li>❌ Static rules and thresholds</li>
+                    <li>❌ Manual tuning required</li>
+                    <li>❌ Same output every time</li>
+                    <li>❌ No learning from usage</li>
+                </ul>
+            </div>
+            <div class="comparison-card heptaai">
+                <h3 class="comparison-label white">HeptaAI System</h3>
+                <ul class="comparison-list heptaai">
+                    <li>✅ Adaptive detection algorithms</li>
+                    <li>✅ Self-optimizing thresholds</li>
+                    <li>✅ Learns from every dataset</li>
+                    <li>✅ Improves with every fix applied</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integration Section -->
+    <section class="integration-section">
+        <h2 class="section-headline white">Works With Your Existing Stack</h2>
+        <p class="section-subline">HeptaAI integrates seamlessly with your data science workflow. No migration, no vendor lock-in.</p>
+        <div class="tech-stack">
+            <p class="stack-label">Data Frameworks</p>
+            <div class="tech-logos">
+                <div class="tech-logo">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/pandas/pandas-original.svg" alt="Pandas" class="tech-logo-img" />
+                    <span>Pandas</span>
+                </div>
+                <div class="tech-logo">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/apachespark/apachespark-original.svg" alt="Spark" class="tech-logo-img" />
+                    <span>Spark</span>
+                </div>
+                <div class="tech-logo">
+                    <svg class="tech-logo-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <text x="50" y="70" font-family="Inter, sans-serif" font-size="70" font-weight="700" fill="#FC6E6B" text-anchor="middle">D</text>
+                    </svg>
+                    <span>Dask</span>
+                </div>
+                <div class="tech-logo">
+                    <svg class="tech-logo-img" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <text x="50" y="70" font-family="Inter, sans-serif" font-size="70" font-weight="700" fill="#5E81AC" text-anchor="middle">P</text>
+                    </svg>
+                    <span>Polars</span>
+                </div>
+            </div>
+            <p class="stack-label">ML Frameworks</p>
+            <div class="tech-logos">
+                <div class="tech-logo">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/scikitlearn/scikitlearn-original.svg" alt="Scikit-learn" class="tech-logo-img" />
+                    <span>Scikit-learn</span>
+                </div>
+                <div class="tech-logo">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/pytorch/pytorch-original.svg" alt="PyTorch" class="tech-logo-img" />
+                    <span>PyTorch</span>
+                </div>
+                <div class="tech-logo">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tensorflow/tensorflow-original.svg" alt="TensorFlow" class="tech-logo-img" />
+                    <span>TensorFlow</span>
+                </div>
+                <div class="tech-logo">
+                    <svg class="tech-logo-img" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+                        <text x="60" y="70" font-family="Inter, sans-serif" font-size="50" font-weight="700" fill="#337AB7" text-anchor="middle">XGB</text>
+                    </svg>
+                    <span>XGBoost</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonial-section">
+        <h2 class="section-headline white">Trusted by Data Scientists</h2>
+        <div class="testimonial-grid">
+            <div class="testimonial-card">
+                <p class="testimonial-quote">"HeptaAI detected 10% duplicates in our training data that we completely missed. After cleaning, our model's precision improved by 2.8%. This isn't just a tool—it's like having a data quality engineer on the team."</p>
+                <div class="testimonial-author">
+                    <p class="author-name">Dr. Sarah Chen</p>
+                    <p class="author-title">ML Research Scientist, Kaggle Competition Winner</p>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-quote">"The 'training data compiler' analogy is perfect. We don't change our model architecture—HeptaAI optimizes the input. Our AUC went from 0.842 to 0.845 just by fixing data quality issues we didn't know existed."</p>
+                <div class="testimonial-author">
+                    <p class="author-name">Alex Rodriguez</p>
+                    <p class="author-title">Senior Data Scientist, Financial Services</p>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-quote">"What sold me was the before/after metrics comparison. HeptaAI doesn't just tell you what's wrong—it proves the ROI of fixing it. We saved weeks of manual data debugging."</p>
+                <div class="testimonial-author">
+                    <p class="author-name">Maya Patel</p>
+                    <p class="author-title">Lead ML Engineer, E-commerce Platform</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Validation Pipeline Section -->
+    <section class="validation-section">
+        <h2 class="section-headline">Validation Pipeline Built for ML Teams</h2>
+        <p class="section-subline">Four-step workflow from detection to deployment</p>
+        <div class="workflow-grid">
+            <div class="workflow-card">
+                <div class="workflow-number">1</div>
+                <h3>Detect</h3>
+                <p>Schema validation, missing values, duplicates, outliers, label noise</p>
+            </div>
+            <div class="workflow-card">
+                <div class="workflow-number">2</div>
+                <h3>Fix</h3>
+                <p>Remove duplicates, impute missing values, filter anomalies automatically</p>
+            </div>
+            <div class="workflow-card">
+                <div class="workflow-number">3</div>
+                <h3>Measure</h3>
+                <p>Compare before/after model metrics: AUC, precision, recall, F1</p>
+            </div>
+            <div class="workflow-card">
+                <div class="workflow-number">4</div>
+                <h3>Ship</h3>
+                <p>Deploy models with proven performance gains and documented ROI</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results-section">
+        <h2 class="section-headline">Proven Impact on Real Datasets</h2>
+        <p class="section-subline">Kaggle Titanic: 712 training samples, 19% missing values, 10% duplicates</p>
+        <div class="metrics-card">
+            <div class="metric">
+                <div class="metric-value negative">10.1%</div>
+                <div class="metric-label">Duplicates Detected</div>
+                <div class="metric-detail">72 rows removed</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value positive">+0.4%</div>
+                <div class="metric-label">AUC Improvement</div>
+                <div class="metric-detail">0.842 → 0.845</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value positive">+2.8%</div>
+                <div class="metric-label">Precision Gain</div>
+                <div class="metric-detail">Better predictions</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section class="cta-section">
+        <h2 class="cta-headline">Ready to Ship Better Models?</h2>
+        <p class="cta-subline">Join data teams using HeptaAI to detect issues, prove ROI, and deploy with confidence</p>
+        <div class="cta-buttons">
+            <button class="btn-cta-primary">Get Started Free</button>
+            <button class="btn-cta-secondary">Book a Demo</button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>HeptaAI</h3>
+                <p>Data quality validation for ML teams</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Product</h4>
+                    <a href="#">Features</a>
+                    <a href="#">Pricing</a>
+                    <a href="#">Documentation</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Resources</h4>
+                    <a href="#">Blog</a>
+                    <a href="#">GitHub</a>
+                    <a href="#">Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Particle Network Animation -->
+    <script src="particles.js"></script>
+</body>
+</html>
