@@ -20,7 +20,12 @@ website/
 ├── index.html          # Main HTML structure
 ├── styles.css          # Complete styling with Apple-like aesthetics
 ├── particles.js        # Animated dot mesh network background
-└── README.md          # This file
+├── deploy.sh           # Deployment script with 3 hosting options
+├── deploy.md           # Deployment instructions
+└── README.md           # This file
+
+docs/website/
+└── website-structure-analysis.md  # Competitor analysis (Fireworks, Cleanlab, lakeFS)
 ```
 
 ## Sections

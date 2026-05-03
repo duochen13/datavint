@@ -35,7 +35,10 @@ heptaAI/
 │   │   ├── profiling.md              # Profiling API docs
 │   │   └── detectors.md              # Issue detection API docs
 │   ├── features/                      # Feature specs & implementation notes
-│   │   └── data-profiling.md         # Profiling feature summary
+│   │   ├── data-profiling.md         # Profiling feature summary
+│   │   └── validation.md             # Model validation (⚠️ <10GB limit)
+│   ├── website/                       # Website documentation
+│   │   └── website-structure-analysis.md  # Competitor analysis
 │   └── changelog/                     # Design specs & architecture decisions
 │       └── 2026-04-27-heptaai-design.md  # Main design spec
 │
@@ -47,7 +50,14 @@ heptaAI/
 │
 ├── examples/                           # Python code examples
 │   ├── demo_profiling.py              # 4 profiling examples
-│   └── quick_profile.py               # Simple workflow
+│   ├── quick_profile.py               # Simple workflow
+│   └── demo_validation.py             # Model validation demo
+│
+├── validation/                         # Model validation (⚠️ MVP: <10GB only)
+│   ├── __init__.py
+│   ├── data_fixer.py                  # Simple fixes (in-memory copy)
+│   ├── model_trainer.py               # Lightweight model training
+│   └── metrics.py                     # AUC, F1, NE, RMSE
 │
 ├── tests/                              # Unit & integration tests
 │   ├── __init__.py
@@ -68,6 +78,14 @@ heptaAI/
 │   │   └── movielens_anomalous.csv
 │   └── download_movielens.py
 │
+├── website/                            # Official landing page
+│   ├── index.html                     # Main HTML structure
+│   ├── styles.css                     # Apple-style black aesthetic
+│   ├── particles.js                   # Animated particle network background
+│   ├── deploy.sh                      # Deployment script
+│   ├── deploy.md                      # Deployment instructions
+│   └── README.md                      # Website documentation
+│
 └── benchmarks/                         # Performance benchmarks
     └── bench_statistics.py
 ```
@@ -82,6 +100,7 @@ docs/
 ├── README.md           # Docs overview, navigation
 ├── api/               # Public API reference (user-facing)
 ├── features/          # Feature specs & notes (developer-facing)
+├── website/           # Website documentation & competitor analysis
 └── changelog/         # Product design & architecture decisions
 ```
 
@@ -98,6 +117,12 @@ docs/
 - Content: Implementation details, design decisions, testing status
 - Format: Technical, comprehensive
 - Example: `features/data-profiling.md`
+
+**`docs/website/`** - Website Documentation
+- For: Marketing, website development
+- Content: Competitor analysis, website structure, design decisions
+- Format: Analysis reports, comparative reviews
+- Example: `website/website-structure-analysis.md`
 
 **`docs/changelog/`** - Design Specs & Architecture
 - For: Product planning, architecture decisions
@@ -168,6 +193,11 @@ docs/
 → Read `README.md` contributing section
 → Check `docs/features/` for existing patterns
 → See `tests/` for testing approach
+
+**"I want to work on the website"**
+→ Check `website/` for landing page files
+→ Read `docs/website/website-structure-analysis.md` for competitor insights
+→ See `website/README.md` for customization guide
 
 ## 🧹 What Changed (Reorganization)
 
@@ -243,6 +273,7 @@ heptaAI/
 **Organize by audience:**
 - `docs/api/` → For users
 - `docs/features/` → For developers
+- `docs/website/` → For marketing & website development
 - `docs/changelog/` → For product planning & architecture history
 
 **Link generously:**
@@ -291,5 +322,5 @@ heptaAI/
 
 ---
 
-**Last updated:** 2026-05-02
+**Last updated:** 2026-05-03
 **Maintained by:** HeptaAI Team
