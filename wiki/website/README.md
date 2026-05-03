@@ -16,16 +16,20 @@ A modern, Apple-inspired landing page for HeptaAI - The Next Generation Training
 ## File Structure
 
 ```
-website/
-├── index.html          # Main HTML structure
+docs/                   # Website files (GitHub Pages serves from /docs)
+├── index.html          # Main HTML structure (landing page)
 ├── styles.css          # Complete styling with Apple-like aesthetics
 ├── particles.js        # Animated dot mesh network background
 ├── deploy.sh           # Deployment script with 3 hosting options
-├── deploy.md           # Deployment instructions
-└── README.md           # This file
+└── deploy.md           # Deployment instructions
 
-docs/website/
-└── website-structure-analysis.md  # Competitor analysis (Fireworks, Cleanlab, lakeFS)
+wiki/                   # Documentation
+├── api/                # API documentation
+├── features/           # Feature documentation
+├── changelog/          # Design specs
+└── website/            # Website documentation
+    ├── README.md       # Website customization guide (this file)
+    └── website-structure-analysis.md  # Competitor analysis
 ```
 
 ## Sections
@@ -48,14 +52,16 @@ docs/website/
 
 1. Open `index.html` in your browser:
    ```bash
+   cd docs
    open index.html
    # or
    python -m http.server 8000
    # then visit http://localhost:8000
    ```
 
-2. Edit content in `index.html`
-3. Edit styles in `styles.css`
+2. Edit content in `docs/index.html`
+3. Edit styles in `docs/styles.css`
+4. Edit particle effects in `docs/particles.js`
 
 ### Deploy to Production
 
@@ -79,11 +85,13 @@ cd website
 vercel --prod
 ```
 
-#### Option 3: GitHub Pages
-1. Create a new GitHub repository
-2. Push website folder contents
-3. Enable GitHub Pages in repository settings
-4. Your site will be at `https://yourusername.github.io/reponame/`
+#### Option 3: GitHub Pages (Recommended)
+1. Go to https://github.com/duochen13/hepta-ai/settings/pages
+2. Under "Source" → Select "Deploy from a branch"
+3. Under "Branch" → Select "main"
+4. Under "Folder" → Select "/docs"
+5. Click "Save"
+6. Your site will be live at `https://duochen13.github.io/hepta-ai/`
 
 #### Option 4: AWS S3 + CloudFront
 ```bash

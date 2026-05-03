@@ -29,7 +29,14 @@ heptaAI/
 │   │   └── imbalance.py              # v0.1 (class imbalance)
 │   └── manifest.py                    # v0.2 (coming soon)
 │
-├── docs/                               # Documentation
+├── docs/                               # Website (GitHub Pages deployment)
+│   ├── index.html                     # Landing page
+│   ├── styles.css                     # Website styling
+│   ├── particles.js                   # Particle network animation
+│   ├── deploy.sh                      # Deployment script
+│   └── deploy.md                      # Deployment instructions
+│
+├── wiki/                               # Documentation
 │   ├── README.md                      # Docs overview, quick links
 │   ├── api/                           # Public API reference
 │   │   ├── profiling.md              # Profiling API docs
@@ -38,6 +45,7 @@ heptaAI/
 │   │   ├── data-profiling.md         # Profiling feature summary
 │   │   └── validation.md             # Model validation (⚠️ <10GB limit)
 │   ├── website/                       # Website documentation
+│   │   ├── README.md                 # Website customization guide
 │   │   └── website-structure-analysis.md  # Competitor analysis
 │   └── changelog/                     # Design specs & architecture decisions
 │       └── 2026-04-27-heptaai-design.md  # Main design spec
@@ -78,25 +86,17 @@ heptaAI/
 │   │   └── movielens_anomalous.csv
 │   └── download_movielens.py
 │
-├── website/                            # Official landing page
-│   ├── index.html                     # Main HTML structure
-│   ├── styles.css                     # Apple-style black aesthetic
-│   ├── particles.js                   # Animated particle network background
-│   ├── deploy.sh                      # Deployment script
-│   ├── deploy.md                      # Deployment instructions
-│   └── README.md                      # Website documentation
-│
 └── benchmarks/                         # Performance benchmarks
     └── bench_statistics.py
 ```
 
 ## 📚 Documentation Organization
 
-### `docs/` - All Documentation
+### `wiki/` - All Documentation
 
 **Structure:**
 ```
-docs/
+wiki/
 ├── README.md           # Docs overview, navigation
 ├── api/               # Public API reference (user-facing)
 ├── features/          # Feature specs & notes (developer-facing)
@@ -104,31 +104,49 @@ docs/
 └── changelog/         # Product design & architecture decisions
 ```
 
+### `docs/` - Website Files (GitHub Pages)
+
+**Structure:**
+```
+docs/
+├── index.html         # Landing page
+├── styles.css         # Website styling
+├── particles.js       # Particle animation
+├── deploy.sh          # Deployment script
+└── deploy.md          # Deployment guide
+```
+
 **Guidelines:**
 
-**`docs/api/`** - API Reference
+**`wiki/api/`** - API Reference
 - For: End users
 - Content: Function signatures, parameters, examples
 - Format: Clear, concise, example-driven
-- Example: `api/profiling.md`
+- Example: `wiki/api/profiling.md`
 
-**`docs/features/`** - Feature Documentation
+**`wiki/features/`** - Feature Documentation
 - For: Developers, contributors
 - Content: Implementation details, design decisions, testing status
 - Format: Technical, comprehensive
-- Example: `features/data-profiling.md`
+- Example: `wiki/features/data-profiling.md`
 
-**`docs/website/`** - Website Documentation
+**`wiki/website/`** - Website Documentation
 - For: Marketing, website development
 - Content: Competitor analysis, website structure, design decisions
 - Format: Analysis reports, comparative reviews
-- Example: `website/website-structure-analysis.md`
+- Example: `wiki/website/website-structure-analysis.md`
 
-**`docs/changelog/`** - Design Specs & Architecture
+**`wiki/changelog/`** - Design Specs & Architecture
 - For: Product planning, architecture decisions
 - Content: Vision, roadmap, competitive analysis, design history
 - Format: Long-form, strategic, timestamped
-- Example: `changelog/2026-04-27-heptaai-design.md`
+- Example: `wiki/changelog/2026-04-27-heptaai-design.md`
+
+**`docs/`** - Website Files
+- For: Public website (GitHub Pages deployment)
+- Content: HTML, CSS, JavaScript for landing page
+- Format: Static website files
+- Example: `docs/index.html`
 
 ## 🗂️ File Naming Conventions
 
@@ -179,25 +197,25 @@ docs/
 **"I want to use HeptaAI"**
 → Start with `README.md`
 → Then `notebooks/quickstart.ipynb`
-→ Reference `docs/api/`
+→ Reference `wiki/api/`
 
 **"I want to understand a feature"**
-→ Check `docs/api/` for usage
-→ Check `docs/features/` for implementation
+→ Check `wiki/api/` for usage
+→ Check `wiki/features/` for implementation
 → Check `examples/` for working code
 
 **"I want to understand the product vision"**
-→ Read `docs/changelog/2026-04-27-heptaai-design.md`
+→ Read `wiki/changelog/2026-04-27-heptaai-design.md`
 
 **"I want to contribute"**
 → Read `README.md` contributing section
-→ Check `docs/features/` for existing patterns
+→ Check `wiki/features/` for existing patterns
 → See `tests/` for testing approach
 
 **"I want to work on the website"**
-→ Check `website/` for landing page files
-→ Read `docs/website/website-structure-analysis.md` for competitor insights
-→ See `website/README.md` for customization guide
+→ Check `docs/` for landing page files (index.html, styles.css, particles.js)
+→ Read `wiki/website/website-structure-analysis.md` for competitor insights
+→ See `wiki/website/README.md` for customization guide
 
 ## 🧹 What Changed (Reorganization)
 
@@ -205,10 +223,16 @@ docs/
 
 ```bash
 # API docs moved to api/ subdirectory
-docs/PROFILING.md  →  docs/api/profiling.md
+docs/PROFILING.md  →  wiki/api/profiling.md
 
 # Feature summary moved from root to features/
-PROFILING_FEATURE_SUMMARY.md  →  docs/features/data-profiling.md
+PROFILING_FEATURE_SUMMARY.md  →  wiki/features/data-profiling.md
+
+# Documentation moved to wiki/, website files in docs/
+docs/api/  →  wiki/api/
+docs/features/  →  wiki/features/
+docs/changelog/  →  wiki/changelog/
+website/  →  docs/  (website files only)
 ```
 
 ### New Files Created
@@ -249,6 +273,10 @@ heptaAI/
 heptaAI/
 ├── README.md                     ← Project entry point
 ├── docs/
+│   ├── index.html               ← Landing page (GitHub Pages)
+│   ├── styles.css
+│   └── particles.js
+├── wiki/
 │   ├── README.md                ← Docs navigation
 │   ├── api/                     ← User docs
 │   │   └── profiling.md
@@ -257,11 +285,11 @@ heptaAI/
 ```
 
 **Benefits:**
-- ✅ Clear separation of concerns
+- ✅ Clear separation: `docs/` = website, `wiki/` = documentation
+- ✅ GitHub Pages ready (deploys from `/docs`)
 - ✅ Easy to navigate
 - ✅ Scalable (add more features easily)
 - ✅ Professional structure
-- ✅ GitHub-friendly
 
 ## 🎯 Best Practices
 
@@ -271,10 +299,11 @@ heptaAI/
 - No code files (except setup.py if needed)
 
 **Organize by audience:**
-- `docs/api/` → For users
-- `docs/features/` → For developers
-- `docs/website/` → For marketing & website development
-- `docs/changelog/` → For product planning & architecture history
+- `wiki/api/` → For users
+- `wiki/features/` → For developers
+- `wiki/website/` → For marketing & website development
+- `wiki/changelog/` → For product planning & architecture history
+- `docs/` → For public website (GitHub Pages)
 
 **Link generously:**
 - README links to quickstart
@@ -291,8 +320,9 @@ heptaAI/
 
 **Keep it manageable:**
 - `heptaai/` - Core package (~10-20 files per version)
-- `docs/api/` - One file per major API module
-- `docs/features/` - One file per major feature
+- `wiki/api/` - One file per major API module
+- `wiki/features/` - One file per major feature
+- `docs/` - Website files only (5-10 files)
 - `notebooks/` - 2-5 high-quality notebooks
 - `examples/` - 5-10 focused examples
 
