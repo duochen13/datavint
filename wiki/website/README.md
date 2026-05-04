@@ -1,6 +1,6 @@
-# HeptaAI Landing Page
+# DataVint Landing Page
 
-A modern, Apple-inspired landing page for HeptaAI - The Next Generation Training Data Compiler.
+A modern, Apple-inspired landing page for DataVint - The Next Generation Training Data Compiler.
 
 ## Design Features
 
@@ -38,7 +38,7 @@ wiki/                   # Documentation
 2. **Hero Section** - "Training Data Compiler" pitch with dual CTAs
 3. **Trust Bar** - Dataset logos (Kaggle, UCI ML, OpenML, MovieLens, Amazon)
 4. **Problem Section** - Three pain point cards (light background)
-5. **System Differentiator** - Traditional Tools vs HeptaAI comparison (black background)
+5. **System Differentiator** - Traditional Tools vs DataVint comparison (black background)
 6. **Integration Section** - Data frameworks (Pandas, Spark, Dask, Polars) + ML frameworks (Scikit-learn, PyTorch, TensorFlow, XGBoost) with glowing logos
 7. **Testimonials** - Three customer quotes (black background)
 8. **Validation Pipeline** - 4-step workflow (Detect → Fix → Measure → Ship)
@@ -185,8 +185,8 @@ To disable the animation, simply remove:
 
 4. **Add Meta Tags** for SEO:
    ```html
-   <meta name="description" content="HeptaAI - The next generation training data compiler">
-   <meta property="og:title" content="HeptaAI">
+   <meta name="description" content="DataVint - The next generation training data compiler">
+   <meta property="og:title" content="DataVint">
    <meta property="og:description" content="Optimize your dataset without changing your model">
    <meta property="og:image" content="https://yoursite.com/og-image.png">
    ```
@@ -216,4 +216,4 @@ To disable the animation, simply remove:
 
 ## License
 
-This landing page design is part of the HeptaAI project.
+This landing page design is part of the DataVint project.

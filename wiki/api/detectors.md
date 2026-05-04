@@ -10,7 +10,7 @@ Complete API reference for detecting and displaying data quality issues.
 
 ## Overview
 
-HeptaAI provides automated detection of 6 types of data quality issues that can degrade ML model performance:
+DataVint provides automated detection of 6 types of data quality issues that can degrade ML model performance:
 
 1. **Missing Values** - Features with high null rates
 2. **Duplicates** - Exact duplicate rows in the dataset
@@ -24,7 +24,7 @@ HeptaAI provides automated detection of 6 types of data quality issues that can 
 ## Quick Start
 
 ```python
-import heptaai as hepta
+import datavint as hepta
 
 # 1. Generate statistics
 train_stats = hepta.generate_statistics("train.csv", label_col="click")
@@ -402,7 +402,7 @@ class IssueType(Enum):
 **Example:**
 
 ```python
-from heptaai import IssueType
+from datavint import IssueType
 
 issues = hepta.detect_issues(train_stats)
 
@@ -429,7 +429,7 @@ class IssueSeverity(Enum):
 **Example:**
 
 ```python
-from heptaai import IssueSeverity
+from datavint import IssueSeverity
 
 issues = hepta.detect_issues(train_stats)
 
@@ -448,7 +448,7 @@ print(f"HIGH: {high}, MEDIUM: {medium}, LOW: {low}")
 ### Pre-Training Quality Check
 
 ```python
-import heptaai as hepta
+import datavint as hepta
 
 # 1. Profile first (quick overview)
 hepta.profile_dataset("train.csv", label_col="click")
@@ -481,7 +481,7 @@ else:
 ```python
 # In your CI/CD pipeline
 import sys
-import heptaai as hepta
+import datavint as hepta
 
 # Run quality checks
 train_stats = hepta.generate_statistics("data/train.csv", label_col="target")
@@ -506,7 +506,7 @@ else:
 ### Daily Pipeline Monitoring
 
 ```python
-import heptaai as hepta
+import datavint as hepta
 from datetime import datetime, timedelta
 
 # Check today's data refresh
@@ -690,7 +690,7 @@ critical_only = [i for i in issues if i.severity.value == "high"]
 - **[Profiling API](profiling.md)** - Quick dataset exploration
 - **[Statistics API](statistics.md)** - Detailed feature statistics (coming soon)
 - **[Feature Implementation](../features/issue-detection.md)** - How detectors work internally (coming soon)
-- **[Design Spec](../changelog/2026-04-27-heptaai-design.md)** - Product vision and architecture
+- **[Design Spec](../changelog/2026-04-27-datavint-design.md)** - Product vision and architecture
 
 ---
 
@@ -711,4 +711,4 @@ critical_only = [i for i in issues if i.severity.value == "high"]
 ---
 
 **Last updated:** 2026-05-02
-**Maintained by:** HeptaAI Team
+**Maintained by:** DataVint Team

@@ -1,18 +1,18 @@
 #!/bin/bash
 
-echo "🚀 HeptaAI Website Deployment"
+echo "🚀 DataVint Website Deployment"
 echo "=============================="
 echo ""
 echo "Choose deployment method:"
 echo ""
 echo "1) Surge.sh (Fastest - 30 seconds)"
-echo "   → https://heptaai.surge.sh"
+echo "   → https://datavint.surge.sh"
 echo ""
 echo "2) GitHub Pages (Free forever)"
 echo "   → https://duochen13.github.io/hepta-ai"
 echo ""
 echo "3) Netlify (Professional)"
-echo "   → https://heptaai.netlify.app"
+echo "   → https://datavint.netlify.app"
 echo ""
 read -p "Enter choice (1, 2, or 3): " choice
 
@@ -24,7 +24,7 @@ case $choice in
         echo "First time? You'll need to create an account (takes 10 seconds)"
         echo ""
         cd "$(dirname "$0")"
-        surge . heptaai.surge.sh
+        surge . datavint.surge.sh
         ;;
     2)
         echo ""

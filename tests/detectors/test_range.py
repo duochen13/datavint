@@ -12,9 +12,9 @@ Validates that:
 import pytest
 import pandas as pd
 
-from heptaai.statistics import generate_statistics
-from heptaai.detectors.range import NumericRangeDetector
-from heptaai.types import IssueSeverity, IssueType
+from datavint.statistics import generate_statistics
+from datavint.detectors.range import NumericRangeDetector
+from datavint.types import IssueSeverity, IssueType
 
 
 class TestNumericRangeDetector:

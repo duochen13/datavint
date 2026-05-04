@@ -1,4 +1,4 @@
-# HeptaAI
+# DataVint
 
 **Data Quality Detection for Machine Learning**
 
@@ -14,7 +14,7 @@ Automatically detect and fix data quality issues before training ML models.
 ## 🚀 Quick Start (30 seconds)
 
 ```python
-import heptaai as hepta
+import datavint as hepta
 
 # 1. Quick profile - understand your data (< 1 sec)
 hepta.profile_dataset("train.csv", label_col="click")
@@ -52,17 +52,17 @@ hepta.display_issues(issues)
 
 ```bash
 # From source (development)
-git clone https://github.com/yourusername/heptaai.git
-cd heptaai
+git clone https://github.com/yourusername/datavint.git
+cd datavint
 pip install -e .
 
 # PyPI (coming soon)
-# pip install heptaai
+# pip install datavint
 ```
 
 ---
 
-## 🎯 Why HeptaAI?
+## 🎯 Why DataVint?
 
 ### The Problem
 
@@ -82,7 +82,7 @@ model.fit(train_data)  # → AUC: 0.762
 
 ### The Solution
 
-**HeptaAI workflow:**
+**DataVint workflow:**
 ```python
 # Detect issues BEFORE training (< 10 seconds total)
 hepta.profile_dataset("train.csv")              # Quick overview
@@ -146,7 +146,7 @@ model.fit(cleaned_data)  # → AUC: 0.824 (+6.2%)
 
 ## 📊 Comparison
 
-| Feature | TFDV | Deepchecks | cleanlab | **HeptaAI** |
+| Feature | TFDV | Deepchecks | cleanlab | **DataVint** |
 |---------|------|------------|----------|-------------|
 | **Quick profiling** | ❌ | ❌ | ❌ | ✅ < 1 sec |
 | **Train-test skew** | ✅ | ✅ | ❌ | ✅ |
@@ -175,7 +175,7 @@ model.fit(cleaned_data)  # → AUC: 0.824 (+6.2%)
 - **[Notebooks](notebooks/)** - Interactive Jupyter notebooks
 
 ### Architecture
-- **[Product Design Spec](docs/changelog/2026-04-27-heptaai-design.md)** - Complete vision
+- **[Product Design Spec](docs/changelog/2026-04-27-datavint-design.md)** - Complete vision
 - **[Data Profiling Feature](docs/features/data-profiling.md)** - Implementation details
 
 ---
@@ -185,7 +185,7 @@ model.fit(cleaned_data)  # → AUC: 0.824 (+6.2%)
 ### Example 1: Quick Dataset Exploration
 
 ```python
-import heptaai as hepta
+import datavint as hepta
 
 # Profile a new dataset in < 1 second
 hepta.profile_dataset("mystery_data.csv", label_col="target")
@@ -262,7 +262,7 @@ hepta.display_issues(issues)
 
 ```
 heptaAI/
-├── heptaai/                    # Core package
+├── datavint/                    # Core package
 │   ├── __init__.py            # Public API
 │   ├── profiling.py           # Data profiling
 │   ├── statistics.py          # Statistics generation
@@ -308,7 +308,7 @@ heptaAI/
 pytest
 
 # Run with coverage
-pytest --cov=heptaai --cov-report=html
+pytest --cov=datavint --cov-report=html
 
 # Run specific test
 pytest tests/detectors/test_missing_values.py
@@ -328,8 +328,8 @@ Contributions welcome! Please:
 
 **Development setup:**
 ```bash
-git clone https://github.com/yourusername/heptaai.git
-cd heptaai
+git clone https://github.com/yourusername/datavint.git
+cd datavint
 pip install -e ".[dev]"  # Install with dev dependencies
 pytest  # Run tests
 ```
@@ -359,7 +359,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 📬 Contact
 
-- **GitHub Issues:** [Report bugs or request features](https://github.com/yourusername/heptaai/issues)
+- **GitHub Issues:** [Report bugs or request features](https://github.com/yourusername/datavint/issues)
 - **Email:** your.email@example.com
 - **LinkedIn:** [Your Profile](https://linkedin.com/in/yourprofile)
 
@@ -367,7 +367,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## ⭐ Star History
 
-If HeptaAI helps you build better ML models, consider giving it a star! ⭐
+If DataVint helps you build better ML models, consider giving it a star! ⭐
 
 ---
 

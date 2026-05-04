@@ -1,9 +1,9 @@
 """
-Validation Demo: Measure HeptaAI's Impact on Model Performance
+Validation Demo: Measure DataVint's Impact on Model Performance
 
 This example shows the correct workflow:
 1. Train baseline model on raw dirty data
-2. Run HeptaAI detection
+2. Run DataVint detection
 3. Apply fixes
 4. Train on clean data
 5. Compare metrics (prove ROI)
@@ -14,7 +14,7 @@ This example shows the correct workflow:
 
 import pandas as pd
 import numpy as np
-import heptaai as hepta
+import datavint as hepta
 from validation import fix_dataset, train_and_evaluate
 from validation.metrics import compare_metrics
 
@@ -24,7 +24,7 @@ np.random.seed(42)
 
 def main():
     print("=" * 70)
-    print("HeptaAI Validation Demo: Proving Data Quality Impact")
+    print("DataVint Validation Demo: Proving Data Quality Impact")
     print("=" * 70)
     print()
 
@@ -69,9 +69,9 @@ def main():
     print()
 
     # =========================================================================
-    # 3. HeptaAI Detection
+    # 3. DataVint Detection
     # =========================================================================
-    print("Step 3: Running HeptaAI quality detection...")
+    print("Step 3: Running DataVint quality detection...")
     print("-" * 70)
 
     # Profile first (quick overview)
@@ -126,7 +126,7 @@ def main():
     # =========================================================================
     # 6. Compare Metrics (ROI)
     # =========================================================================
-    print("Step 6: Impact of HeptaAI")
+    print("Step 6: Impact of DataVint")
     print("=" * 70)
 
     print(compare_metrics(metrics_before, metrics_after))
@@ -137,7 +137,7 @@ def main():
     auc_pct = (auc_delta / metrics_before['auc']) * 100
 
     print("=" * 70)
-    print("✅ HeptaAI Validation Complete")
+    print("✅ DataVint Validation Complete")
     print("=" * 70)
     print(f"AUC Improvement: {auc_delta:+.3f} ({auc_pct:+.1f}%)")
     print(f"Issues Fixed: {len(issues)}")

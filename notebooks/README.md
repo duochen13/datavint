@@ -1,6 +1,6 @@
-# HeptaAI Notebooks
+# DataVint Notebooks
 
-Interactive Jupyter notebooks demonstrating HeptaAI's data quality features.
+Interactive Jupyter notebooks demonstrating DataVint's data quality features.
 
 ## 📚 Available Notebooks
 
@@ -45,7 +45,7 @@ jupyter notebook notebooks/data_profiling_demo.ipynb
 # Install Jupyter (if not already installed)
 pip install jupyter
 
-# Install HeptaAI (from project root)
+# Install DataVint (from project root)
 cd /path/to/heptaAI
 pip install -e .
 ```
@@ -183,7 +183,7 @@ Label (label):
 
 ## 🛠️ Troubleshooting
 
-### "ModuleNotFoundError: No module named 'heptaai'"
+### "ModuleNotFoundError: No module named 'datavint'"
 
 **Solution:** Make sure you're running Jupyter from the project root:
 
@@ -229,7 +229,7 @@ hepta.profile_dataset("large_data.csv")
 - **Profiling API:** `docs/api/profiling.md`
 - **Detectors API:** `docs/api/detectors.md`
 - **Python Examples:** `examples/`
-- **Design Spec:** `docs/changelog/2026-04-27-heptaai-design.md`
+- **Design Spec:** `docs/changelog/2026-04-27-datavint-design.md`
 
 ## 🤝 Contributing
 
@@ -242,4 +242,4 @@ Found an issue or want to add a notebook?
 
 ## 📝 License
 
-Same as main HeptaAI project.
+Same as main DataVint project.

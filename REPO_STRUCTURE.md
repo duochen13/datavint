@@ -1,17 +1,17 @@
-# HeptaAI Repository Structure
+# DataVint Repository Structure
 
-Clean, organized structure for the HeptaAI project.
+Clean, organized structure for the DataVint project.
 
 ## 📁 Directory Layout
 
 ```
-heptaAI/
+DataVint/
 ├── README.md                           # Project overview, quick start
 ├── .gitignore
 ├── requirements.txt
 ├── LICENSE
 │
-├── heptaai/                            # Core Python package
+├── datavint/                            # Core Python package
 │   ├── __init__.py                    # Public API exports
 │   ├── profiling.py                   # Data profiling (v0.1)
 │   ├── statistics.py                  # Statistics generation (v0.1)
@@ -48,7 +48,7 @@ heptaAI/
 │   │   ├── README.md                 # Website customization guide
 │   │   └── website-structure-analysis.md  # Competitor analysis
 │   └── changelog/                     # Design specs & architecture decisions
-│       └── 2026-04-27-heptaai-design.md  # Main design spec
+│       └── 2026-04-27-datavint-design.md  # Main design spec
 │
 ├── notebooks/                          # Jupyter notebooks
 │   ├── README.md                      # Notebook directory guide
@@ -140,7 +140,7 @@ docs/
 - For: Product planning, architecture decisions
 - Content: Vision, roadmap, competitive analysis, design history
 - Format: Long-form, strategic, timestamped
-- Example: `wiki/changelog/2026-04-27-heptaai-design.md`
+- Example: `wiki/changelog/2026-04-27-datavint-design.md`
 
 **`docs/`** - Website Files
 - For: Public website (GitHub Pages deployment)
@@ -174,8 +174,8 @@ docs/
 **Checklist when adding a feature:**
 
 1. **Code:**
-   - [ ] Add implementation to `heptaai/`
-   - [ ] Export from `heptaai/__init__.py`
+   - [ ] Add implementation to `datavint/`
+   - [ ] Export from `datavint/__init__.py`
    - [ ] Add tests to `tests/`
 
 2. **Documentation:**
@@ -194,7 +194,7 @@ docs/
 
 ## 🔍 Finding Things
 
-**"I want to use HeptaAI"**
+**"I want to use DataVint"**
 → Start with `README.md`
 → Then `notebooks/quickstart.ipynb`
 → Reference `wiki/api/`
@@ -205,7 +205,7 @@ docs/
 → Check `examples/` for working code
 
 **"I want to understand the product vision"**
-→ Read `wiki/changelog/2026-04-27-heptaai-design.md`
+→ Read `wiki/changelog/2026-04-27-datavint-design.md`
 
 **"I want to contribute"**
 → Read `README.md` contributing section
@@ -255,14 +255,14 @@ examples/demo_profiling.py
 examples/quick_profile.py
 
 # Core
-heptaai/profiling.py
+datavint/profiling.py
 ```
 
 ### Why This Structure?
 
 **Before (messy root):**
 ```
-heptaAI/
+DataVint/
 ├── PROFILING_FEATURE_SUMMARY.md  ← Root cluttered
 ├── docs/
 │   └── PROFILING.md              ← No organization
@@ -270,7 +270,7 @@ heptaAI/
 
 **After (clean organization):**
 ```
-heptaAI/
+DataVint/
 ├── README.md                     ← Project entry point
 ├── docs/
 │   ├── index.html               ← Landing page (GitHub Pages)
@@ -319,7 +319,7 @@ heptaAI/
 ## 📊 Directory Size Guidelines
 
 **Keep it manageable:**
-- `heptaai/` - Core package (~10-20 files per version)
+- `datavint/` - Core package (~10-20 files per version)
 - `wiki/api/` - One file per major API module
 - `wiki/features/` - One file per major feature
 - `docs/` - Website files only (5-10 files)
@@ -353,4 +353,4 @@ heptaAI/
 ---
 
 **Last updated:** 2026-05-03
-**Maintained by:** HeptaAI Team
+**Maintained by:** DataVint Team

@@ -1,6 +1,6 @@
-# Getting Started with HeptaAI Notebooks
+# Getting Started with DataVint Notebooks
 
-Quick guide to running HeptaAI notebooks in 3 minutes.
+Quick guide to running DataVint notebooks in 3 minutes.
 
 ## 🚀 Quick Start (3 steps)
 
@@ -10,7 +10,7 @@ Quick guide to running HeptaAI notebooks in 3 minutes.
 # From project root directory
 cd /path/to/heptaAI
 
-# Install HeptaAI in development mode
+# Install DataVint in development mode
 pip install -e .
 
 # Install Jupyter
@@ -46,7 +46,7 @@ Then navigate to:
 
 ### `quickstart.ipynb` ⚡ (5 minutes)
 
-**Goal:** See HeptaAI in action immediately
+**Goal:** See DataVint in action immediately
 
 **Contents:**
 1. Profile a dataset (< 1 sec)
@@ -85,7 +85,7 @@ Then navigate to:
 ### Profile Your Own Dataset
 
 ```python
-import heptaai as hepta
+import datavint as hepta
 
 # Replace with your file path
 hepta.profile_dataset(
@@ -119,7 +119,7 @@ hepta.display_issues(issues)
 
 ## 🐛 Troubleshooting
 
-### Problem: "ModuleNotFoundError: No module named 'heptaai'"
+### Problem: "ModuleNotFoundError: No module named 'datavint'"
 
 **Cause:** Jupyter started from wrong directory
 
@@ -252,7 +252,7 @@ After completing the notebooks:
 
 - **Profiling API:** `docs/api/profiling.md`
 - **Detectors API:** `docs/api/detectors.md`
-- **Design Spec:** `docs/changelog/2026-04-27-heptaai-design.md`
+- **Design Spec:** `docs/changelog/2026-04-27-datavint-design.md`
 - **Python Examples:** `examples/`
 
 ## 🤔 Questions?

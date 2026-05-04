@@ -11,9 +11,9 @@ Validates that:
 import pytest
 import pandas as pd
 
-from heptaai.statistics import generate_statistics
-from heptaai.detectors.imbalance import ClassImbalanceDetector
-from heptaai.types import IssueSeverity, IssueType
+from datavint.statistics import generate_statistics
+from datavint.detectors.imbalance import ClassImbalanceDetector
+from datavint.types import IssueSeverity, IssueType
 
 
 class TestClassImbalanceDetector:

@@ -9,7 +9,7 @@ Data fixing strategies based on detected issues.
    - Stream data from S3/data lake
    - Apply transformations during model training
 
-   See: heptaai/manifest.py (coming in v0.2)
+   See: datavint/manifest.py (coming in v0.2)
 """
 
 from typing import List, Dict, Any, Optional
@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 import pandas as pd
 import numpy as np
 
-from heptaai.types import Issue
+from datavint.types import Issue
 
 
 @dataclass
@@ -83,7 +83,7 @@ def fix_dataset(
         (df_clean, report): Cleaned dataframe and fix report
 
     Example:
-        >>> import heptaai as hepta
+        >>> import datavint as hepta
         >>> from validation import fix_dataset
         >>>
         >>> # Detect issues
@@ -236,7 +236,7 @@ def fix_dataset_simple(df: pd.DataFrame, label_col: str) -> pd.DataFrame:
 """
 Example future implementation:
 
-from heptaai.manifest import DataManifest
+from datavint.manifest import DataManifest
 
 def generate_manifest(df: pd.DataFrame, issues: List[Issue]) -> DataManifest:
     '''

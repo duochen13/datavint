@@ -1,7 +1,7 @@
 """
 Validation Demo with Properly Corrupted Data
 
-This demo injects SEVERE quality issues to clearly demonstrate HeptaAI's impact:
+This demo injects SEVERE quality issues to clearly demonstrate DataVint's impact:
 - 30% missing values in key feature
 - 10% duplicate rows
 - 5% class imbalance (from 50%)
@@ -12,7 +12,7 @@ This demo injects SEVERE quality issues to clearly demonstrate HeptaAI's impact:
 
 import pandas as pd
 import numpy as np
-import heptaai as hepta
+import datavint as hepta
 from validation import fix_dataset, train_and_evaluate
 from validation.metrics import compare_metrics
 
@@ -61,7 +61,7 @@ def corrupt_dataset(df, label_col):
 
 def main():
     print("=" * 70)
-    print("HeptaAI Validation Demo: Proving Data Quality Impact")
+    print("DataVint Validation Demo: Proving Data Quality Impact")
     print("With Severely Corrupted Data")
     print("=" * 70)
     print()
@@ -112,9 +112,9 @@ def main():
     print()
 
     # =========================================================================
-    # 3. HeptaAI Detection
+    # 3. DataVint Detection
     # =========================================================================
-    print("Step 3: Running HeptaAI quality detection...")
+    print("Step 3: Running DataVint quality detection...")
     print("-" * 70)
 
     # Profile first (quick overview)
@@ -169,7 +169,7 @@ def main():
     # =========================================================================
     # 6. Compare Metrics (ROI)
     # =========================================================================
-    print("Step 6: Impact of HeptaAI")
+    print("Step 6: Impact of DataVint")
     print("=" * 70)
 
     print(compare_metrics(metrics_before, metrics_after))
@@ -180,14 +180,14 @@ def main():
     auc_pct = (auc_delta / metrics_before['auc']) * 100 if metrics_before['auc'] > 0 else 0
 
     print("=" * 70)
-    print("✅ HeptaAI Validation Complete")
+    print("✅ DataVint Validation Complete")
     print("=" * 70)
     print(f"AUC Improvement: {auc_delta:+.3f} ({auc_pct:+.1f}%)")
     print(f"Issues Fixed: {len(issues)}")
     print(f"Rows Cleaned: {fix_report.rows_before:,} → {fix_report.rows_after:,}")
     print()
     print("💡 Key Takeaway:")
-    print("   HeptaAI detected and fixed data quality issues, improving")
+    print("   DataVint detected and fixed data quality issues, improving")
     print("   model performance without any feature engineering or")
     print("   hyperparameter tuning.")
     print("=" * 70)

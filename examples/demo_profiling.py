@@ -1,11 +1,11 @@
 """
 Demo: Data profiling workflow
 
-Shows how to use HeptaAI's profiling features to understand your dataset
+Shows how to use DataVint's profiling features to understand your dataset
 before running quality detection.
 """
 
-import heptaai as hepta
+import datavint as hepta
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Example 1: Quick profile of a single dataset

@@ -12,9 +12,9 @@ Validates that:
 import pytest
 import pandas as pd
 
-from heptaai.statistics import generate_statistics
-from heptaai.detectors.missing_values import MissingValuesDetector
-from heptaai.types import IssueSeverity, IssueType
+from datavint.statistics import generate_statistics
+from datavint.detectors.missing_values import MissingValuesDetector
+from datavint.types import IssueSeverity, IssueType
 
 
 class TestMissingValuesDetector:

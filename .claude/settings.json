@@ -1,5 +1,5 @@
 {
   "hooks": {
-    "sessionStart": ".claude/load-memory.sh && /context-restore"
+    "sessionStart": ".claude/load-memory.sh"
   }
 }

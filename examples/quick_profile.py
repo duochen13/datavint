@@ -5,11 +5,11 @@ Quick profiling example - show dataset overview before quality checks.
 import sys
 sys.path.insert(0, '.')
 
-import heptaai as hepta
+import datavint as hepta
 
 # Simple workflow: Profile → Stats → Detect → Display
 
-print("\n" + "🔍 HeptaAI Data Quality Workflow" + "\n")
+print("\n" + "🔍 DataVint Data Quality Workflow" + "\n")
 
 # Step 1: Quick profile to understand the data
 print("Step 1: Profile dataset (quick overview)")

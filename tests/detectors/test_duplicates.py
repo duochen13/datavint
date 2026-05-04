@@ -13,9 +13,9 @@ Validates that:
 import pytest
 import pandas as pd
 
-from heptaai.statistics import generate_statistics
-from heptaai.detectors.duplicates import DuplicatesDetector
-from heptaai.types import IssueSeverity, IssueType
+from datavint.statistics import generate_statistics
+from datavint.detectors.duplicates import DuplicatesDetector
+from datavint.types import IssueSeverity, IssueType
 
 
 class TestDuplicatesDetector:

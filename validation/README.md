@@ -1,6 +1,6 @@
 # Validation Module
 
-Measure HeptaAI's impact on model performance by comparing metrics before and after data quality fixes.
+Measure DataVint's impact on model performance by comparing metrics before and after data quality fixes.
 
 ## ⚠️ MVP LIMITATIONS
 
@@ -15,7 +15,7 @@ Measure HeptaAI's impact on model performance by comparing metrics before and af
 - ❌ Does NOT support distributed processing
 
 **For production (v0.2+):**
-- See `heptaai/manifest.py` (manifest-based, no copying)
+- See `datavint/manifest.py` (manifest-based, no copying)
 - See `docs/features/validation.md` for scalability roadmap
 
 ---
@@ -24,7 +24,7 @@ Measure HeptaAI's impact on model performance by comparing metrics before and af
 
 ```python
 import pandas as pd
-import heptaai as hepta
+import datavint as hepta
 from validation import fix_dataset, train_and_evaluate
 from validation.metrics import compare_metrics
 
@@ -40,7 +40,7 @@ metrics_before = train_and_evaluate(
     train_raw, test, features, label, model_type="logistic"
 )
 
-# 3. HeptaAI detection
+# 3. DataVint detection
 stats = hepta.generate_statistics(train_raw, label_col=label)
 issues = hepta.detect_issues(stats)
 
@@ -127,7 +127,7 @@ See `examples/demo_validation.py` for complete end-to-end demo.
 
 ```python
 # Future API
-from heptaai.manifest import generate_manifest
+from datavint.manifest import generate_manifest
 
 # Generate lightweight manifest (no data copy)
 manifest = generate_manifest(issues, label_col="click")

@@ -13,9 +13,9 @@ import pytest
 import pandas as pd
 import numpy as np
 
-from heptaai.statistics import generate_statistics
-from heptaai.detectors.skew import TrainTestSkewDetector
-from heptaai.types import IssueSeverity, IssueType
+from datavint.statistics import generate_statistics
+from datavint.detectors.skew import TrainTestSkewDetector
+from datavint.types import IssueSeverity, IssueType
 
 
 class TestTrainTestSkewDetector:

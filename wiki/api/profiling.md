@@ -1,4 +1,4 @@
-# Data Profiling in HeptaAI
+# Data Profiling in DataVint
 
 Quick dataset overview before running quality detection.
 
@@ -9,7 +9,7 @@ Quick dataset overview before running quality detection.
 Get a comprehensive overview of your dataset in seconds:
 
 ```python
-import heptaai as hepta
+import datavint as hepta
 
 hepta.profile_dataset("train.csv", label_col="click")
 ```
@@ -89,7 +89,7 @@ Label (click):
 ### Recommended Usage Pattern
 
 ```python
-import heptaai as hepta
+import datavint as hepta
 
 # ═══════════════════════════════════════════════════════════════
 # Step 1: Quick Profile (understand what you have)

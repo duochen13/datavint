@@ -13,9 +13,9 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-from heptaai.statistics import generate_statistics
-from heptaai.utils.divergence import js_divergence_categorical, js_divergence_numeric
-from heptaai.types import DatasetStatistics
+from datavint.statistics import generate_statistics
+from datavint.utils.divergence import js_divergence_categorical, js_divergence_numeric
+from datavint.types import DatasetStatistics
 
 
 # Fixture: Path to test data

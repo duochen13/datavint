@@ -28,7 +28,7 @@
 
 ```
 heptaAI/
-├── heptaai/
+├── datavint/
 │   ├── __init__.py                      # ✅ Updated (exposed new API)
 │   └── profiling.py                     # ✅ New (467 lines)
 │
@@ -197,7 +197,7 @@ hepta.profile_dataset(df, label_col="conversion")
 ```bash
 # In GitHub Actions
 python -c "
-import heptaai as hepta
+import datavint as hepta
 hepta.compare_datasets('train.csv', 'test.csv', 'click')
 " || echo "Data quality check failed"
 ```
@@ -258,7 +258,7 @@ hepta.compare_datasets('train.csv', 'test.csv', 'click')
 6. Fix          hepta.generate_manifest()         ← Coming v0.2
 ```
 
-**Profiling (steps 1-2) are the new "front door" to HeptaAI.**
+**Profiling (steps 1-2) are the new "front door" to DataVint.**
 
 ## 💡 Design Decisions
 
@@ -371,8 +371,8 @@ Use cases:
 - In-memory DataFrame profiling
 
 Files changed:
-- heptaai/profiling.py (467 lines, new)
-- heptaai/__init__.py (updated exports)
+- datavint/profiling.py (467 lines, new)
+- datavint/__init__.py (updated exports)
 - notebooks/quickstart.ipynb (new)
 - notebooks/data_profiling_demo.ipynb (new)
 - docs/PROFILING.md (new)

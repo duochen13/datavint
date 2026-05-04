@@ -1,4 +1,4 @@
-# Model Validation - Measuring HeptaAI's Impact
+# Model Validation - Measuring DataVint's Impact
 
 > **Location:** `docs/features/validation.md`
 > **Version:** v0.1 (MVP)
@@ -9,10 +9,10 @@
 
 ## Overview
 
-The validation module measures HeptaAI's impact on model performance by:
+The validation module measures DataVint's impact on model performance by:
 
 1. Training baseline model on **raw dirty data** → metrics_before
-2. Running HeptaAI detection → find issues
+2. Running DataVint detection → find issues
 3. Applying simple fixes → cleaned dataset
 4. Training on **clean data** → metrics_after
 5. Computing delta → **prove ROI**
@@ -84,7 +84,7 @@ df = dask.read_csv("s3://bucket/*.csv")  # Distributed
 
 ```python
 import pandas as pd
-import heptaai as hepta
+import datavint as hepta
 from validation import fix_dataset, train_and_evaluate, compare_metrics
 
 # 1. Load raw dirty data (e.g., Kaggle Titanic with missing Age)
@@ -109,7 +109,7 @@ print(f"AUC: {metrics_before['auc']:.3f}")
 print(f"F1:  {metrics_before['f1']:.3f}")
 print(f"NE:  {metrics_before['ne']:.3f}")
 
-# 3. HeptaAI Detection
+# 3. DataVint Detection
 print("\n" + "=" * 60)
 print("HEPTAAI: Detecting quality issues")
 print("=" * 60)
@@ -140,7 +140,7 @@ print(f"NE:  {metrics_after['ne']:.3f}")
 
 # 6. Show Delta (ROI)
 print("\n" + "=" * 60)
-print("RESULTS: Impact of HeptaAI")
+print("RESULTS: Impact of DataVint")
 print("=" * 60)
 print(compare_metrics(metrics_before, metrics_after))
 ```
@@ -194,7 +194,7 @@ F1:  0.287
 NE:  0.412
 
 ============================================================
-RESULTS: Impact of HeptaAI
+RESULTS: Impact of DataVint
 ============================================================
 Metrics Before → After:
   AUC       : 0.762 → 0.824 (↑+8.1%) ✅
@@ -213,7 +213,7 @@ Metrics Before → After:
 |--------|-----------|---------------------|
 | **AUC** | Primary business KPI | ↑ Increase |
 | **F1** | Balance precision/recall | ↑ Increase (especially after imbalance fix) |
-| **NE** (Normalized Entropy) | HeptaAI's focus metric | ↓ Decrease (less noise) |
+| **NE** (Normalized Entropy) | DataVint's focus metric | ↓ Decrease (less noise) |
 | **Precision** | False positive rate | ↑ Increase |
 | **Recall** | False negative rate | ↑ Increase |
 | **RMSE** | Probability calibration | ↓ Decrease |
@@ -246,7 +246,7 @@ heptaAI/
 
 ```python
 # Future API (v0.2)
-from heptaai.manifest import generate_manifest
+from datavint.manifest import generate_manifest
 
 # 1. Generate lightweight manifest (no data copy)
 manifest = generate_manifest(issues, label_col="click")
@@ -281,7 +281,7 @@ metrics = manifest.evaluate(model, test_source="s3://bucket/test.parquet")
 ```python
 # Future: Spark/Dask support (v0.2+)
 import dask.dataframe as dd
-from heptaai.distributed import fix_dataset_distributed
+from datavint.distributed import fix_dataset_distributed
 
 # Read from S3 (distributed)
 train_raw = dd.read_parquet("s3://bucket/train/*.parquet")
@@ -305,7 +305,7 @@ metrics = train_and_evaluate_distributed(train_clean, test, features, "click")
 
 ```python
 # Future: Data lake integration (v0.2+)
-from heptaai.io import read_from_s3, read_from_bigquery
+from datavint.io import read_from_s3, read_from_bigquery
 
 # S3
 stats = hepta.generate_statistics(
@@ -335,7 +335,7 @@ stats = hepta.generate_statistics(
 
 ```python
 # Future: Advanced imputation (v0.2+)
-from heptaai.fixing import ImputationStrategy
+from datavint.fixing import ImputationStrategy
 
 # KNN imputation
 manifest = generate_manifest(
@@ -392,10 +392,10 @@ manifest = generate_manifest(
 
 ### **Production Ready (v0.2) - ⏳ Planned**
 
-- [ ] `heptaai/manifest.py` - Manifest-based fixing
-- [ ] `heptaai/io.py` - S3, BigQuery, HDFS readers
-- [ ] `heptaai/distributed.py` - Spark/Dask support
-- [ ] `heptaai/fixing.py` - Advanced imputation strategies
+- [ ] `datavint/manifest.py` - Manifest-based fixing
+- [ ] `datavint/io.py` - S3, BigQuery, HDFS readers
+- [ ] `datavint/distributed.py` - Spark/Dask support
+- [ ] `datavint/fixing.py` - Advanced imputation strategies
 - [ ] Zero-copy transformations
 - [ ] Streaming data support
 
@@ -405,7 +405,7 @@ manifest = generate_manifest(
 
 - **[Detectors API](../api/detectors.md)** - Issue detection
 - **[Profiling API](../api/profiling.md)** - Quick data exploration
-- **[Design Spec](../changelog/2026-04-27-heptaai-design.md)** - Product vision
+- **[Design Spec](../changelog/2026-04-27-datavint-design.md)** - Product vision
 
 ---
 
@@ -417,7 +417,7 @@ manifest = generate_manifest(
 - Use datasets < 10GB
 - Use local CSV/Parquet files
 - Accept in-memory copying limitation
-- Focus on proving HeptaAI's value
+- Focus on proving DataVint's value
 
 ❌ **DON'T:**
 - Claim this scales to production (it doesn't)

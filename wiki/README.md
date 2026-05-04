@@ -1,6 +1,6 @@
-# HeptaAI Documentation
+# DataVint Documentation
 
-Documentation for HeptaAI data quality detection SDK.
+Documentation for DataVint data quality detection SDK.
 
 ## 📚 Directory Structure
 
@@ -12,7 +12,7 @@ docs/
 ├── features/                    # Feature specs & implementation notes
 │   └── data-profiling.md       # Data profiling feature summary
 └── changelog/                   # Product design & architecture decisions
-    └── 2026-04-27-heptaai-design.md  # Main product design spec
+    └── 2026-04-27-datavint-design.md  # Main product design spec
 ```
 
 ## 🚀 Quick Links
@@ -26,7 +26,7 @@ docs/
 
 ### For Developers
 
-- **[Product Design Spec](changelog/2026-04-27-heptaai-design.md)** - Complete product vision and architecture
+- **[Product Design Spec](changelog/2026-04-27-datavint-design.md)** - Complete product vision and architecture
 - **[Data Profiling Feature](features/data-profiling.md)** - Implementation details and design decisions
 
 ## 📖 Documentation by Topic
@@ -42,7 +42,7 @@ docs/
 
 **Quick example:**
 ```python
-import heptaai as hepta
+import datavint as hepta
 
 # Quick profile
 hepta.profile_dataset("train.csv", label_col="click")
@@ -165,4 +165,4 @@ hepta.display_issues(issues)
 
 - Check [notebooks/GETTING_STARTED.md](../notebooks/GETTING_STARTED.md) for setup help
 - See [examples/](../examples/) for working code
-- Read [changelog/2026-04-27-heptaai-design.md](changelog/2026-04-27-heptaai-design.md) for architecture details
+- Read [changelog/2026-04-27-datavint-design.md](changelog/2026-04-27-datavint-design.md) for architecture details

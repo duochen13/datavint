@@ -252,7 +252,7 @@ body > *:not(#particle-canvas) {
     gap: 24px;
 }
 
-.comparison-card.heptaai {
+.comparison-card.datavint {
     background: #6366F1;
     border: none;
     box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
@@ -281,7 +281,7 @@ body > *:not(#particle-canvas) {
     font-weight: 400;
 }
 
-.comparison-list.heptaai li {
+.comparison-list.datavint li {
     color: #E0E7FF;
     font-weight: 500;
 }
