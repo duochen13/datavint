@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataVint Playground - Interactive Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Neo-Brutalist Data Lab Colors */
+            --bg-dark: #0a0e1a;
+            --bg-panel: #12172b;
+            --bg-hover: #1a2137;
+            --bg-editor: #0d1117;
+            --border: #2a3551;
+            --border-active: #00f0ff;
+            --text-primary: #e8edf5;
+            --text-secondary: #8b95b0;
+            --text-muted: #5a6580;
+            --accent-cyan: #00f0ff;
+            --accent-lime: #a4ff00;
+            --accent-purple: #b794f6;
+            --accent-orange: #ff6b35;
+            --shadow-glow: rgba(0, 240, 255, 0.2);
+
+            /* Syntax Colors */
+            --syntax-keyword: #ff79c6;
+            --syntax-function: #50fa7b;
+            --syntax-string: #f1fa8c;
+            --syntax-comment: #6272a4;
+            --syntax-number: #bd93f9;
+
+            /* Typography */
+            --font-ui: 'DM Sans', -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-ui);
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Main Container */
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header with Tabs */
+        .header {
+            background: var(--bg-panel);
+            border-bottom: 3px solid var(--border);
+            padding: 0;
+            display: flex;
+            align-items: stretch;
+            height: 56px;
+            position: relative;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 24px;
+            border-right: 3px solid var(--border);
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-lime));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--accent-cyan);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--bg-dark);
+        }
+
+        .tabs {
+            display: flex;
+            flex: 1;
+        }
+
+        .tab {
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: var(--font-ui);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-right: 1px solid var(--border);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .tab:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: var(--bg-dark);
+            color: var(--accent-cyan);
+            border-bottom: 3px solid var(--accent-cyan);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 12px var(--shadow-glow);
+        }
+
+        .tab-icon {
+            font-size: 16px;
+        }
+
+        /* Split Panel Layout */
+        .split-panel {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Left Panel - Chat */
+        .left-panel {
+            width: 25%;
+            min-width: 280px;
+            max-width: 400px;
+            background: var(--bg-panel);
+            border-right: 3px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--accent-lime);
+            font-family: var(--font-mono);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-lime);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Chat Messages */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--border-active);
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .message.user .message-label {
+            color: var(--accent-cyan);
+        }
+
+        .message.assistant .message-label {
+            color: var(--accent-lime);
+        }
+
+        .message-content {
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .message.user .message-content {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 1px var(--shadow-glow);
+        }
+
+        /* Chat Input */
+        .chat-input-container {
+            padding: 16px 20px;
+            border-top: 2px solid var(--border);
+            background: var(--bg-dark);
+        }
+
+        .chat-input-wrapper {
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            background: var(--bg-panel);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 48px 12px 14px;
+            font-family: var(--font-ui);
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.2s;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px var(--shadow-glow);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-button {
+            position: absolute;
+            right: 8px;
+            bottom: 8px;
+            width: 32px;
+            height: 32px;
+            background: var(--accent-cyan);
+            border: none;
+            border-radius: 6px;
+            color: var(--bg-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .send-button:hover {
+            background: var(--accent-lime);
+            transform: scale(1.05);
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Right Panel - IDE */
+        .right-panel {
+            flex: 1;
+            background: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* IDE Container */
+        .ide-container {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+        }
+
+        .ide-container.active {
+            display: flex;
+        }
+
+        /* IDE Toolbar */
+        .ide-toolbar {
+            background: var(--bg-panel);
+            border-bottom: 2px solid var(--border);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .file-tab {
+            padding: 8px 16px;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 6px 6px 0 0;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: none;
+        }
+
+        .file-tab.active {
+            background: var(--bg-editor);
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        .ide-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .ide-button {
+            padding: 8px 16px;
+            background: var(--accent-lime);
+            border: none;
+            border-radius: 6px;
+            font-family: var(--font-ui);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--bg-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .ide-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(164, 255, 0, 0.3);
+        }
+
+        .ide-button:active {
+            transform: translateY(0);
+        }
+
+        .ide-button.secondary {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .ide-button.secondary:hover {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 4px 12px var(--shadow-glow);
+        }
+
+        .button-icon {
+            font-size: 14px;
+        }
+
+        /* Editor Area */
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-editor);
+            position: relative;
+        }
+
+        .editor-wrapper {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .line-numbers {
+            background: var(--bg-panel);
+            padding: 16px 12px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            text-align: right;
+            user-select: none;
+            border-right: 2px solid var(--border);
+            min-width: 60px;
+        }
+
+        .editor-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-editor {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 16px 20px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+            color: transparent;
+            caret-color: var(--text-primary);
+            background: transparent;
+            border: none;
+            outline: none;
+            resize: none;
+            overflow-y: auto;
+            white-space: pre;
+            tab-size: 4;
+            z-index: 2;
+        }
+
+        .syntax-highlight {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 16px 20px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: var(--bg-editor);
+            pointer-events: none;
+            overflow-y: auto;
+            white-space: pre;
+            tab-size: 4;
+            z-index: 1;
+        }
+
+        /* Syntax highlighting colors */
+        .syntax-highlight .keyword {
+            color: var(--syntax-keyword);
+            font-weight: 500;
+        }
+
+        .syntax-highlight .function {
+            color: var(--syntax-function);
+        }
+
+        .syntax-highlight .string {
+            color: var(--syntax-string);
+        }
+
+        .syntax-highlight .comment {
+            color: var(--syntax-comment);
+            font-style: italic;
+        }
+
+        .syntax-highlight .number {
+            color: var(--syntax-number);
+        }
+
+        .syntax-highlight .operator {
+            color: var(--accent-cyan);
+        }
+
+        .syntax-highlight .module {
+            color: var(--accent-purple);
+            font-style: italic;
+        }
+
+        .code-editor::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .code-editor::-webkit-scrollbar-track {
+            background: var(--bg-panel);
+        }
+
+        .code-editor::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 5px;
+        }
+
+        .code-editor::-webkit-scrollbar-thumb:hover {
+            background: var(--border-active);
+        }
+
+        /* Terminal Output */
+        .terminal-container {
+            height: 40%;
+            min-height: 200px;
+            background: var(--bg-panel);
+            border-top: 3px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terminal-header {
+            padding: 12px 16px;
+            background: var(--bg-hover);
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .terminal-title {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-lime);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .terminal-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .terminal-control-btn {
+            width: 24px;
+            height: 24px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .terminal-control-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .terminal-output {
+            flex: 1;
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text-primary);
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .terminal-output::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terminal-output::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        .terminal-output::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .terminal-line {
+            margin-bottom: 4px;
+            animation: terminalFadeIn 0.2s ease-out;
+        }
+
+        @keyframes terminalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .terminal-prompt {
+            color: var(--accent-lime);
+        }
+
+        .terminal-output-line {
+            color: var(--text-primary);
+        }
+
+        .terminal-error {
+            color: var(--accent-orange);
+        }
+
+        .terminal-success {
+            color: var(--accent-lime);
+        }
+
+        .terminal-info {
+            color: var(--accent-cyan);
+        }
+
+        /* Playground Container (non-IDE tabs) */
+        .playground-container {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .playground-container.active {
+            display: block;
+        }
+
+        .playground-container::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .playground-container::-webkit-scrollbar-track {
+            background: var(--bg-panel);
+        }
+
+        .playground-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 5px;
+        }
+
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            background: var(--bg-panel);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background: var(--bg-hover);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            border-bottom: 2px solid var(--border);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+        }
+
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .data-table tr:hover {
+            background: var(--bg-hover);
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 16px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            opacity: 0.3;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .empty-description {
+            font-size: 14px;
+            color: var(--text-muted);
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        /* Resizer */
+        .resizer {
+            width: 4px;
+            background: var(--border);
+            cursor: col-resize;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .resizer:hover,
+        .resizer.resizing {
+            background: var(--accent-cyan);
+            box-shadow: 0 0 8px var(--shadow-glow);
+        }
+
+        /* Welcome Message */
+        .welcome-message {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(164, 255, 0, 0.1));
+            border: 2px solid var(--accent-cyan);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .welcome-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 12px;
+        }
+
+        .welcome-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .welcome-commands {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .welcome-command {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding-left: 12px;
+            position: relative;
+        }
+
+        .welcome-command::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--accent-lime);
+        }
+
+        /* Running State */
+        .running-indicator {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--bg-panel);
+            border: 2px solid var(--accent-lime);
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--accent-lime);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .running-indicator.active {
+            opacity: 1;
+        }
+
+        .spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--accent-lime);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Tabs -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">dv</div>
+                DataVint
+            </div>
+            <div class="tabs">
+                <button class="tab active" data-tab="playground">
+                    <span class="tab-icon">⚡</span>
+                    Playground
+                </button>
+                <button class="tab" data-tab="rawdata">
+                    <span class="tab-icon">📊</span>
+                    Raw Data
+                </button>
+                <button class="tab" data-tab="visualization">
+                    <span class="tab-icon">📈</span>
+                    Visualization Board
+                </button>
+            </div>
+        </header>
+
+        <!-- Split Panel -->
+        <div class="split-panel">
+            <!-- Left Panel - Chat -->
+            <div class="left-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Assistant</div>
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span>READY</span>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="welcome-message">
+                        <div class="welcome-title">👋 Welcome to DataVint Playground</div>
+                        <div class="welcome-text">
+                            Interactive IDE for exploring data quality detection. Try these commands:
+                        </div>
+                        <div class="welcome-commands">
+                            <div class="welcome-command">Analyze my dataset</div>
+                            <div class="welcome-command">Show me data quality issues</div>
+                            <div class="welcome-command">Generate a manifest</div>
+                            <div class="welcome-command">Compare train vs test data</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <textarea
+                            class="chat-input"
+                            id="chatInput"
+                            placeholder="Ask about data quality..."
+                            rows="1"
+                        ></textarea>
+                        <button class="send-button" id="sendButton">
+                            ➤
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resizer -->
+            <div class="resizer" id="resizer"></div>
+
+            <!-- Right Panel - IDE -->
+            <div class="right-panel">
+                <!-- Playground Tab - IDE -->
+                <div class="ide-container active" id="playgroundTab">
+                    <!-- Toolbar -->
+                    <div class="ide-toolbar">
+                        <div class="file-tabs">
+                            <div class="file-tab active">analysis.py</div>
+                        </div>
+                        <div class="ide-actions">
+                            <button class="ide-button secondary" id="clearBtn">
+                                <span class="button-icon">🗑</span>
+                                Clear
+                            </button>
+                            <button class="ide-button" id="runBtn">
+                                <span class="button-icon">▶</span>
+                                Run Code
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Editor -->
+                    <div class="editor-container">
+                        <div class="running-indicator" id="runningIndicator">
+                            <div class="spinner"></div>
+                            Running...
+                        </div>
+
+                        <div class="editor-wrapper">
+                            <div class="line-numbers" id="lineNumbers">1</div>
+                            <div class="editor-content">
+                                <div class="syntax-highlight" id="syntaxHighlight"></div>
+                                <textarea
+                                    class="code-editor"
+                                    id="codeEditor"
+                                    spellcheck="false"
+                                    placeholder="# Write your DataVint code here...&#10;import datavint as dv&#10;&#10;# Example:&#10;stats = dv.generate_statistics('train.csv', label_col='click')&#10;issues = dv.detect_issues(stats)&#10;dv.display_issues(issues)"
+                                >import datavint as dv
+
+# Generate statistics
+train_stats = dv.generate_statistics("train.csv", label_col="click")
+test_stats = dv.generate_statistics("test.csv", label_col="click")
+
+# Detect issues
+issues = dv.detect_issues(train_stats, serving_statistics=test_stats)
+dv.display_issues(issues)</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Terminal Output -->
+                        <div class="terminal-container">
+                            <div class="terminal-header">
+                                <div class="terminal-title">⚡ Console Output</div>
+                                <div class="terminal-controls">
+                                    <button class="terminal-control-btn" id="clearTerminal" title="Clear">✕</button>
+                                </div>
+                            </div>
+                            <div class="terminal-output" id="terminalOutput">
+                                <div class="terminal-line terminal-info">DataVint v0.2.0 - Ready</div>
+                                <div class="terminal-line terminal-info">Press Run Code to execute ▶</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Raw Data Tab -->
+                <div class="playground-container" id="rawdataTab">
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <div class="empty-title">No data loaded</div>
+                        <div class="empty-description">
+                            Raw data view will show your dataset once loaded.
+                            Use the chat or run code in the playground to load data.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization Tab -->
+                <div class="playground-container" id="visualizationTab">
+                    <div class="empty-state">
+                        <div class="empty-icon">📈</div>
+                        <div class="empty-title">No visualizations yet</div>
+                        <div class="empty-description">
+                            Data quality visualizations and charts will appear here once you run analysis.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        const tabs = document.querySelectorAll('.tab');
+        const ideContainer = document.getElementById('playgroundTab');
+        const rawdataTab = document.getElementById('rawdataTab');
+        const visualizationTab = document.getElementById('visualizationTab');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Update active container
+                ideContainer.classList.remove('active');
+                rawdataTab.classList.remove('active');
+                visualizationTab.classList.remove('active');
+
+                if (tabName === 'playground') {
+                    ideContainer.classList.add('active');
+                } else if (tabName === 'rawdata') {
+                    rawdataTab.classList.add('active');
+                } else if (tabName === 'visualization') {
+                    visualizationTab.classList.add('active');
+                }
+            });
+        });
+
+        // Chat functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendButton = document.getElementById('sendButton');
+        const codeEditor = document.getElementById('codeEditor');
+
+        function addMessage(content, type = 'user') {
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+
+            const label = document.createElement('div');
+            label.className = 'message-label';
+            label.textContent = type === 'user' ? 'You' : 'DataVint';
+
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+
+            message.appendChild(label);
+            message.appendChild(messageContent);
+            chatMessages.appendChild(message);
+
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function simulateResponse(userMessage) {
+            setTimeout(() => {
+                addMessage('I\'ve added sample code to the playground. Click "Run Code" to execute!', 'assistant');
+            }, 300);
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (message) {
+                addMessage(message, 'user');
+                chatInput.value = '';
+                simulateResponse(message);
+            }
+        }
+
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // Code Editor - Line numbers and syntax highlighting
+        const lineNumbers = document.getElementById('lineNumbers');
+        const editor = document.getElementById('codeEditor');
+        const syntaxHighlight = document.getElementById('syntaxHighlight');
+
+        function updateLineNumbers() {
+            const lines = editor.value.split('\n').length;
+            lineNumbers.textContent = Array.from({length: lines}, (_, i) => i + 1).join('\n');
+        }
+
+        function highlightSyntax(code) {
+            // Python syntax highlighting patterns
+            const patterns = [
+                // Comments
+                { regex: /(#[^\n]*)/g, class: 'comment' },
+                // Strings (double and single quotes)
+                { regex: /(["'])((?:\\.|(?!\1)[^\\\n])*)\1/g, class: 'string' },
+                // Keywords
+                { regex: /\b(import|from|as|def|class|if|else|elif|for|while|in|return|yield|try|except|finally|with|raise|assert|break|continue|pass|lambda|global|nonlocal|True|False|None)\b/g, class: 'keyword' },
+                // Function/method calls
+                { regex: /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g, class: 'function' },
+                // Numbers
+                { regex: /\b(\d+\.?\d*)\b/g, class: 'number' },
+                // Operators
+                { regex: /([=+\-*/%<>!&|^~])/g, class: 'operator' },
+                // Module names (after import/from)
+                { regex: /\b(?:import|from)\s+([a-zA-Z_][a-zA-Z0-9_.]*)/g, class: 'module' }
+            ];
+
+            let highlighted = code
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            // Apply patterns in order
+            patterns.forEach(pattern => {
+                highlighted = highlighted.replace(pattern.regex, (match, ...groups) => {
+                    // For module pattern, extract the module name from groups
+                    if (pattern.class === 'module') {
+                        const moduleName = groups[0];
+                        return match.replace(moduleName, `<span class="${pattern.class}">${moduleName}</span>`);
+                    }
+                    // For strings, preserve the quotes and content
+                    if (pattern.class === 'string' && groups.length > 0) {
+                        return `<span class="${pattern.class}">${match}</span>`;
+                    }
+                    return `<span class="${pattern.class}">${match}</span>`;
+                });
+            });
+
+            return highlighted;
+        }
+
+        function updateSyntaxHighlight() {
+            const code = editor.value;
+            syntaxHighlight.innerHTML = highlightSyntax(code);
+            syntaxHighlight.scrollTop = editor.scrollTop;
+            syntaxHighlight.scrollLeft = editor.scrollLeft;
+        }
+
+        editor.addEventListener('input', () => {
+            updateLineNumbers();
+            updateSyntaxHighlight();
+        });
+
+        editor.addEventListener('scroll', () => {
+            lineNumbers.scrollTop = editor.scrollTop;
+            syntaxHighlight.scrollTop = editor.scrollTop;
+            syntaxHighlight.scrollLeft = editor.scrollLeft;
+        });
+
+        // Initialize
+        updateLineNumbers();
+        updateSyntaxHighlight();
+
+        // Run Code
+        const runBtn = document.getElementById('runBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const terminalOutput = document.getElementById('terminalOutput');
+        const runningIndicator = document.getElementById('runningIndicator');
+
+        runBtn.addEventListener('click', runCode);
+
+        function runCode() {
+            const code = editor.value;
+
+            // Show running indicator
+            runningIndicator.classList.add('active');
+
+            // Add to terminal
+            addTerminalLine('$ python analysis.py', 'prompt');
+            addTerminalLine('Running analysis...', 'info');
+
+            // Simulate execution
+            setTimeout(() => {
+                addTerminalLine('[datavint] Loading data from train.csv', 'output');
+                addTerminalLine('[datavint] Computing statistics for 80,668 rows, 8 columns', 'output');
+                addTerminalLine('[datavint] Generated statistics for 7 features', 'output');
+
+                setTimeout(() => {
+                    addTerminalLine('', 'output');
+                    addTerminalLine('8 issue(s) detected:', 'success');
+                    addTerminalLine('', 'output');
+                    addTerminalLine('🔴 [missing_values] user_age', 'output');
+                    addTerminalLine('   60.0% of values are missing', 'output');
+                    addTerminalLine('   Severity: HIGH', 'output');
+                    addTerminalLine('', 'output');
+                    addTerminalLine('🟡 [train_test_skew] device', 'output');
+                    addTerminalLine('   Distribution differs (JS divergence: 0.156)', 'output');
+                    addTerminalLine('   Severity: MEDIUM', 'output');
+                    addTerminalLine('', 'output');
+                    addTerminalLine('✓ Analysis complete', 'success');
+
+                    runningIndicator.classList.remove('active');
+
+                    // Update Raw Data tab
+                    updateRawDataTab();
+                }, 1000);
+            }, 800);
+        }
+
+        function addTerminalLine(text, type = 'output') {
+            const line = document.createElement('div');
+            line.className = `terminal-line terminal-${type}`;
+            line.textContent = text;
+            terminalOutput.appendChild(line);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        clearBtn.addEventListener('click', () => {
+            editor.value = '';
+            updateLineNumbers();
+            updateSyntaxHighlight();
+        });
+
+        document.getElementById('clearTerminal').addEventListener('click', () => {
+            terminalOutput.innerHTML = '<div class="terminal-line terminal-info">Terminal cleared</div>';
+        });
+
+        // Update Raw Data Tab
+        function updateRawDataTab() {
+            rawdataTab.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>userId</th>
+                            <th>movieId</th>
+                            <th>rating</th>
+                            <th>genre</th>
+                            <th>year</th>
+                            <th>click</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>429</td>
+                            <td>595</td>
+                            <td>5.0</td>
+                            <td>Animation</td>
+                            <td>1996</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td>429</td>
+                            <td>588</td>
+                            <td>5.0</td>
+                            <td>Adventure</td>
+                            <td>1996</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td>429</td>
+                            <td>590</td>
+                            <td>5.0</td>
+                            <td>Adventure</td>
+                            <td>1996</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td>429</td>
+                            <td>592</td>
+                            <td>5.0</td>
+                            <td>Action</td>
+                            <td>1996</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td>429</td>
+                            <td>432</td>
+                            <td>3.0</td>
+                            <td>Adventure</td>
+                            <td>1996</td>
+                            <td>0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Resizer functionality
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.querySelector('.left-panel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            resizer.classList.add('resizing');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+
+            const containerRect = document.querySelector('.split-panel').getBoundingClientRect();
+            const newWidth = e.clientX - containerRect.left;
+
+            if (newWidth >= 280 && newWidth <= 500) {
+                leftPanel.style.width = newWidth + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                resizer.classList.remove('resizing');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        // Tab support in editor
+        editor.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                editor.value = editor.value.substring(0, start) + '    ' + editor.value.substring(end);
+                editor.selectionStart = editor.selectionEnd = start + 4;
+                updateLineNumbers();
+                updateSyntaxHighlight();
+            }
+        });
+    </script>
+</body>
+</html>
