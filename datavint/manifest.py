@@ -100,7 +100,7 @@ class Manifest:
         # Apply feature fixes (imputation)
         for feature, fix in self.feature_fixes.items():
             if fix['method'] == 'median':
-                df_result[feature].fillna(fix['value'], inplace=True)
+                df_result[feature] = df_result[feature].fillna(fix['value'])
 
         return df_result if not inplace else None
 
@@ -173,8 +173,8 @@ def generate_manifest(
     for issue in issues_by_type[IssueType.HIGH_NULL_RATE]:
         feature = issue.feature
         # Get median from statistics
-        if feature in statistics.feature_stats:
-            feature_stat = statistics.feature_stats[feature]
+        if feature in statistics.features:
+            feature_stat = statistics.features[feature]
             if hasattr(feature_stat, 'mean'):  # Numeric feature
                 median_value = feature_stat.mean  # Use mean as proxy for median
                 feature_fixes[feature] = {
