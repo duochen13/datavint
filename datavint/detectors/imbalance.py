@@ -9,7 +9,7 @@ from typing import List, Optional
 
 from .base import BaseDetector
 from ..types import DatasetStatistics, Issue, IssueType, IssueSeverity
-from ..config import DEFAULT_THRESHOLDS
+from ..config import config
 
 
 class ClassImbalanceDetector(BaseDetector):
@@ -25,8 +25,9 @@ class ClassImbalanceDetector(BaseDetector):
     For binary classification, checks if positive class rate is below threshold.
 
     Severity levels:
-    - HIGH: Positive rate < 1% (default threshold)
-    - Target ratio: 10% (informational, not a threshold)
+    - HIGH: Positive rate < 30% (default threshold)
+    - MEDIUM: Positive rate < 40% (default threshold)
+    - Target ratio: 50% (balanced classes)
 
     Note:
         Only detects imbalance if label_col was provided during statistics
@@ -75,23 +76,26 @@ class ClassImbalanceDetector(BaseDetector):
         if statistics.label_col is None or statistics.label_rate is None:
             return []
 
-        # Get thresholds from config or use defaults
-        thresholds = self.config.get("thresholds") or DEFAULT_THRESHOLDS["class_imbalance"]
-        min_positive_rate = thresholds["min_positive_rate"]
-        target_ratio = thresholds.get("target_ratio", 0.1)  # Optional
+        # Get thresholds from global config
+        high_threshold = config.imbalance_high
+        medium_threshold = config.imbalance_medium
 
         positive_rate = statistics.label_rate
 
-        # Check if below minimum threshold
-        if positive_rate >= min_positive_rate:
+        # Determine severity based on positive rate
+        # Note: For imbalance, LOWER positive rate = WORSE (inverted from other detectors)
+        if positive_rate < high_threshold:
+            severity = IssueSeverity.HIGH
+            threshold = high_threshold
+        elif positive_rate < medium_threshold:
+            severity = IssueSeverity.MEDIUM
+            threshold = medium_threshold
+        else:
             # Not imbalanced enough to be an issue
             return []
 
-        # Determine severity (only HIGH for v0.1)
-        severity = IssueSeverity.HIGH
-
-        # Calculate how far from target ratio
-        ratio_gap = target_ratio - positive_rate
+        # Target ratio for balanced classes
+        target_ratio = 0.5
 
         # Create dataset-level issue (feature=None, but mention label_col in description)
         issue = Issue(
@@ -99,7 +103,7 @@ class ClassImbalanceDetector(BaseDetector):
             severity=severity,
             feature=None,  # Dataset-level issue
             metric_value=positive_rate,
-            threshold=min_positive_rate,
+            threshold=threshold,
             ne_direction="↑",  # Imbalance increases error on minority class
             auc_direction="↓",  # Low minority samples reduce discriminative power
             description=f"Positive class rate is {positive_rate:.2%} (target: ~{target_ratio:.0%})",

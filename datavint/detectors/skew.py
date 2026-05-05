@@ -11,7 +11,7 @@ from scipy.spatial.distance import jensenshannon
 
 from .base import BaseDetector
 from ..types import DatasetStatistics, Issue, IssueType, IssueSeverity
-from ..config import DEFAULT_THRESHOLDS
+from ..config import config
 
 
 class TrainTestSkewDetector(BaseDetector):
@@ -72,10 +72,9 @@ class TrainTestSkewDetector(BaseDetector):
         if serving_statistics is None:
             return []
 
-        # Get thresholds from config or use defaults
-        thresholds = self.config.get("thresholds") or DEFAULT_THRESHOLDS["train_test_skew"]
-        high_threshold = thresholds["js_high"]
-        medium_threshold = thresholds["js_medium"]
+        # Get thresholds from global config
+        high_threshold = config.skew_high
+        medium_threshold = config.skew_medium
 
         issues = []
 
@@ -101,16 +100,15 @@ class TrainTestSkewDetector(BaseDetector):
             if js_divergence is None or js_divergence == 0.0:
                 continue
 
-            # Determine severity
-            if js_divergence > high_threshold:
-                severity = IssueSeverity.HIGH
-                threshold = high_threshold
-            elif js_divergence > medium_threshold:
-                severity = IssueSeverity.MEDIUM
-                threshold = medium_threshold
-            else:
-                # Below both thresholds - not an issue
+            # Determine severity using base class helper (D6 refactor)
+            severity = self._classify_severity(js_divergence, high_threshold, medium_threshold)
+
+            # Skip if below both thresholds
+            if severity == IssueSeverity.LOW:
                 continue
+
+            # Store threshold used for reporting
+            threshold = high_threshold if severity == IssueSeverity.HIGH else medium_threshold
 
             # Create issue
             issues.append(

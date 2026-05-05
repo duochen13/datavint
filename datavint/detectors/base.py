@@ -9,7 +9,7 @@ of concerns and performance.
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-from ..types import DatasetStatistics, Issue
+from ..types import DatasetStatistics, Issue, IssueSeverity
 
 
 class BaseDetector(ABC):
@@ -49,6 +49,41 @@ class BaseDetector(ABC):
             >>> detector = MissingValuesDetector(config={"high": 0.6, "medium": 0.3})
         """
         self.config = config or {}
+
+    def _classify_severity(
+        self,
+        value: float,
+        high_threshold: float,
+        medium_threshold: float
+    ) -> IssueSeverity:
+        """
+        Classify issue severity based on thresholds.
+
+        This helper eliminates DRY violation across detectors (D6 from eng review).
+        Assumes higher values = worse (e.g., null rate, JS divergence).
+
+        Args:
+            value: Measured metric value (e.g., 0.15 for 15% null rate)
+            high_threshold: Threshold for HIGH severity
+            medium_threshold: Threshold for MEDIUM severity
+
+        Returns:
+            IssueSeverity enum (HIGH, MEDIUM, or LOW)
+
+        Example:
+            >>> detector._classify_severity(0.08, high_threshold=0.05, medium_threshold=0.02)
+            IssueSeverity.HIGH  # 0.08 > 0.05
+            >>> detector._classify_severity(0.03, high_threshold=0.05, medium_threshold=0.02)
+            IssueSeverity.MEDIUM  # 0.03 > 0.02 but < 0.05
+            >>> detector._classify_severity(0.01, high_threshold=0.05, medium_threshold=0.02)
+            IssueSeverity.LOW  # 0.01 < 0.02
+        """
+        if value > high_threshold:
+            return IssueSeverity.HIGH
+        elif value > medium_threshold:
+            return IssueSeverity.MEDIUM
+        else:
+            return IssueSeverity.LOW
 
     @abstractmethod
     def detect(

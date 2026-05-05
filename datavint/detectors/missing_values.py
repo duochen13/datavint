@@ -8,7 +8,7 @@ from typing import List, Optional
 
 from .base import BaseDetector
 from ..types import DatasetStatistics, Issue, IssueType, IssueSeverity
-from ..config import DEFAULT_THRESHOLDS
+from ..config import config
 
 
 class MissingValuesDetector(BaseDetector):
@@ -62,10 +62,9 @@ class MissingValuesDetector(BaseDetector):
         Returns:
             List of issues for features exceeding null rate thresholds
         """
-        # Get thresholds from config or use defaults
-        thresholds = self.config.get("thresholds") or DEFAULT_THRESHOLDS["missing_values"]
-        high_threshold = thresholds["high"]
-        medium_threshold = thresholds["medium"]
+        # Get thresholds from global config
+        high_threshold = config.null_rate_high
+        medium_threshold = config.null_rate_medium
 
         issues = []
 
@@ -76,13 +75,11 @@ class MissingValuesDetector(BaseDetector):
             if null_rate == 0.0:
                 continue
 
-            # Determine severity
-            if null_rate > high_threshold:
-                severity = IssueSeverity.HIGH
-            elif null_rate > medium_threshold:
-                severity = IssueSeverity.MEDIUM
-            else:
-                # Below both thresholds - not an issue
+            # Determine severity using base class helper (D6 refactor)
+            severity = self._classify_severity(null_rate, high_threshold, medium_threshold)
+
+            # Skip if below both thresholds
+            if severity == IssueSeverity.LOW:
                 continue
 
             # Create issue
