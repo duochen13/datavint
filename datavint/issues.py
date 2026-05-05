@@ -6,7 +6,7 @@ Provides high-level API for running all detectors and displaying results.
 
 from typing import List, Optional
 
-from .types import DatasetStatistics, Issue
+from .types import DatasetStatistics, Issue, DataVintError
 from .detectors.missing_values import MissingValuesDetector
 from .detectors.duplicates import DuplicatesDetector
 from .detectors.schema import SchemaViolationDetector
@@ -38,6 +38,9 @@ def detect_issues(
     Returns:
         List of all detected issues, sorted by severity (HIGH first)
 
+    Raises:
+        DataVintError: If statistics is None
+
     Example:
         >>> from datavint.statistics import generate_statistics
         >>> from datavint.issues import detect_issues, display_issues
@@ -49,6 +52,10 @@ def detect_issues(
         >>> print(f"Found {len(issues)} issue(s)")
         >>> display_issues(issues)
     """
+    # Validation
+    if statistics is None:
+        raise DataVintError("statistics cannot be None")
+
     all_issues = []
 
     # Initialize all detectors

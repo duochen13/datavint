@@ -14,6 +14,25 @@ from enum import Enum
 from typing import Dict, List, Optional, Any
 
 
+class DataVintError(Exception):
+    """Base exception for all DataVint errors.
+
+    Provides user-friendly error messages for common failure modes:
+    - File not found or corrupted CSV
+    - Empty DataFrames
+    - Schema mismatches between train/test
+    - Manifest size mismatches
+    - Invalid configurations
+
+    Example:
+        >>> try:
+        ...     stats = generate_statistics("missing.csv")
+        ... except DataVintError as e:
+        ...     print(f"DataVint error: {e}")
+    """
+    pass
+
+
 class IssueSeverity(Enum):
     """Severity level for detected issues."""
     LOW = "low"

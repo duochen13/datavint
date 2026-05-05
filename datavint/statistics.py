@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 from scipy.stats import entropy
 
-from .types import DatasetStatistics, FeatureStats
+from .types import DatasetStatistics, FeatureStats, DataVintError
 from .config import logger
 
 
@@ -76,9 +76,8 @@ def generate_statistics(
         DatasetStatistics dataclass with per-feature and global statistics
 
     Raises:
-        FileNotFoundError: If path doesn't exist
-        ValueError: If DataFrame has 0 rows
-        KeyError: If label_col not in DataFrame columns
+        DataVintError: If file not found, corrupted CSV, empty DataFrame,
+                      or label_col not in columns
 
     Example:
         >>> import datavint as dv
@@ -90,18 +89,26 @@ def generate_statistics(
     if isinstance(data, (str, Path)):
         path = Path(data)
         if not path.exists():
-            raise FileNotFoundError(f"File not found: {path}")
+            raise DataVintError(f"File not found: {path}")
         logger.info(f"Loading data from {path}")
-        df = pd.read_csv(path)
+        try:
+            df = pd.read_csv(path)
+        except pd.errors.ParserError as e:
+            raise DataVintError(f"Failed to parse CSV: {path}. {str(e)}") from e
+        except Exception as e:
+            raise DataVintError(f"Error reading file: {path}. {str(e)}") from e
     else:
         df = data.copy()
 
     # 2. Validation
     if len(df) == 0:
-        raise ValueError("Cannot generate statistics from empty DataFrame")
+        raise DataVintError("Cannot generate statistics from empty DataFrame")
 
     if label_col and label_col not in df.columns:
-        raise KeyError(f"Label column '{label_col}' not found in DataFrame columns")
+        raise DataVintError(
+            f"Label column '{label_col}' not found in DataFrame. "
+            f"Available columns: {list(df.columns)}"
+        )
 
     logger.info(f"Computing statistics for {len(df):,} rows, {len(df.columns)} columns")
 
