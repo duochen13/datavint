@@ -18,14 +18,19 @@ app = FastAPI(
     redoc_url="/api/redoc"
 )
 
-# CORS middleware for local development
+# CORS middleware - allows local development and production
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",  # Vite dev server
-        "http://localhost:8000",  # Simple HTTP server
+        # Local development
+        "http://localhost:5173",
+        "http://localhost:8000",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:8000",
+        # Production
+        "https://datavint.io",
+        "https://www.datavint.io",
+        "https://api.datavint.io",
     ],
     allow_credentials=True,
     allow_methods=["*"],

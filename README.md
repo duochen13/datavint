@@ -367,6 +367,24 @@ pytest tests/detectors/test_missing_values.py
 
 ---
 
+## 🚀 Deployment
+
+Ready to deploy DataVint to production? Check out the **[deployment/](deployment/)** directory for complete guides:
+
+- **[Quick Deploy to datavint.io](deployment/DEPLOY_DATAVINT_IO.md)** - Step-by-step guide (~30 min)
+  - Domain registration
+  - Railway backend deployment
+  - Vercel frontend deployment
+  - DNS configuration
+
+- **[General Deployment Guide](deployment/DEPLOYMENT.md)** - Platform comparisons and alternatives
+
+- **[Deployment README](deployment/README.md)** - Overview of all deployment files
+
+**Cost estimate:** ~$8/month (domain + hosting)
+
+---
+
 ## 🤝 Contributing
 
 Contributions welcome! Please:
