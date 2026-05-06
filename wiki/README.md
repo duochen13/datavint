@@ -1,19 +1,44 @@
-# DataVint Documentation
+# DataVint Wiki
 
-Documentation for DataVint data quality detection SDK.
+Complete documentation for the DataVint project - automatically loaded in Claude Code sessions.
 
 ## 📚 Directory Structure
 
 ```
-docs/
+wiki/
 ├── README.md                    # This file
+├── architecture/                # System architecture
+│   └── ARCHITECTURE.md
 ├── api/                         # Public API reference
-│   └── profiling.md            # Profiling API documentation
-├── features/                    # Feature specs & implementation notes
-│   └── data-profiling.md       # Data profiling feature summary
-└── changelog/                   # Product design & architecture decisions
-    └── 2026-04-27-datavint-design.md  # Main product design spec
+│   ├── profiling.md
+│   └── detectors.md
+├── features/                    # Feature specs
+│   ├── data-profiling.md
+│   └── validation.md
+├── guides/                      # Usage guides
+│   └── SEVERITY_GUIDE.md
+├── deployment/                  # Deployment documentation
+│   ├── README.md
+│   ├── DEPLOY_DATAVINT_IO.md
+│   ├── DEPLOY_DATAVINT_CO.md
+│   ├── DEPLOYMENT.md
+│   └── DEPLOYMENT_STATUS.md
+├── notebooks/                   # Notebook documentation
+│   ├── README.md
+│   └── GETTING_STARTED.md
+├── website/                     # Website documentation
+│   ├── README.md
+│   └── website-structure-analysis.md
+└── changelog/                   # Product design & architecture
+    ├── 2026-04-27-heptaai-design.md
+    └── 2026-05-04-datavint-recsys-design.md
 ```
+
+## 🔄 Auto-Loading in Claude Code
+
+**This wiki is automatically loaded when you start a new Claude Code session.**
+
+All markdown files in this directory are made available to Claude via `.claude/hooks/session-start.sh` for immediate context and reference.
 
 ## 🚀 Quick Links
 

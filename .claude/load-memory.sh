@@ -18,3 +18,8 @@ if [ -d "$MEMORY_DIR" ]; then
   echo ""
   echo "=== END MEMORY ==="
 fi
+
+# Load wiki documentation
+if [ -x ".claude/hooks/session-start.sh" ]; then
+  ./.claude/hooks/session-start.sh
+fi
