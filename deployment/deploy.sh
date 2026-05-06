@@ -1,41 +1,65 @@
 #!/bin/bash
-# DataVint Quick Deploy Script
 
-set -e  # Exit on error
-
-echo "🚀 DataVint Deployment Script"
+echo "🚀 DataVint Website Deployment"
 echo "=============================="
 echo ""
-
-# Check if we're in the right directory
-if [ ! -f "package.json" ] && [ ! -d "client" ]; then
-    echo "❌ Error: Must run from project root directory"
-    exit 1
-fi
-
-# 1. Build frontend
-echo "📦 Building frontend..."
-cd client
-npm install
-npm run build
-cd ..
-echo "✅ Frontend built successfully"
+echo "Choose deployment method:"
 echo ""
+echo "1) Surge.sh (Fastest - 30 seconds)"
+echo "   → https://datavint.surge.sh"
+echo ""
+echo "2) GitHub Pages (Free forever)"
+echo "   → https://duochen13.github.io/datavint"
+echo ""
+echo "3) Netlify (Professional)"
+echo "   → https://datavint.netlify.app"
+echo ""
+read -p "Enter choice (1, 2, or 3): " choice
 
-# 2. Test backend locally
-echo "🧪 Testing backend..."
-cd server
-python3 -c "import fastapi, uvicorn, pandas, numpy; print('All dependencies OK')"
-cd ..
-echo "✅ Backend dependencies verified"
-echo ""
+case $choice in
+    1)
+        echo ""
+        echo "📦 Deploying to Surge.sh..."
+        echo ""
+        echo "First time? You'll need to create an account (takes 10 seconds)"
+        echo ""
+        cd "$(dirname "$0")"
+        surge . datavint.surge.sh
+        ;;
+    2)
+        echo ""
+        echo "📝 To deploy via GitHub Pages:"
+        echo ""
+        echo "1. Visit: https://github.com/duochen13/datavint/settings/pages"
+        echo "2. Under 'Source': Select 'main' branch"
+        echo "3. Under 'Folder': Select '/website'"
+        echo "4. Click 'Save'"
+        echo ""
+        echo "Your site will be live at:"
+        echo "https://duochen13.github.io/datavint"
+        echo ""
+        echo "Opening GitHub Pages settings..."
+        open "https://github.com/duochen13/datavint/settings/pages"
+        ;;
+    3)
+        echo ""
+        echo "📦 Deploying to Netlify..."
+        echo ""
+        if command -v netlify &> /dev/null; then
+            cd "$(dirname "$0")"
+            netlify deploy --prod
+        else
+            echo "Installing Netlify CLI..."
+            npm install -g netlify-cli
+            cd "$(dirname "$0")"
+            netlify deploy --prod
+        fi
+        ;;
+    *)
+        echo "Invalid choice"
+        exit 1
+        ;;
+esac
 
-# 3. Ready to deploy
-echo "✨ Build complete! Ready to deploy."
 echo ""
-echo "Next steps:"
-echo "1. Deploy backend to Railway: https://railway.app"
-echo "2. Deploy frontend to Vercel: cd client && vercel --prod"
-echo "3. Configure your domain DNS settings"
-echo ""
-echo "📖 Full guide: See DEPLOYMENT.md"
+echo "✅ Deployment complete!"
