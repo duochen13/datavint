@@ -5,7 +5,7 @@
 
 **Data Quality Detection & Optimization for Machine Learning**
 
-Automatically detect and fix data quality issues before training ML models.
+From raw data to vintage quality—refine your training set before burning GPUs on unpromising results.
 
 > A compiler for your training data—optimize datasets without changing your model.
 
