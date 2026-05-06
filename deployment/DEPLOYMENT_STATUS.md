@@ -7,15 +7,15 @@
 ## ✅ Completed
 
 ### 1. Domain Registration
-- **Domain:** datavint.co
-- **Registrar:** Namecheap
+- **Domain:** datavint.io
+- **Registrar:** Namecheap (or other)
 - **Status:** Registered ✓
 
 ### 2. Landing Page Deployment
 - **Platform:** Vercel
 - **Source:** docs/ directory
 - **Vercel URL:** https://datavint.vercel.app
-- **Production URL:** https://datavint.co (pending DNS propagation)
+- **Production URL:** https://datavint.io (pending DNS propagation)
 - **Status:** Deployed ✓
 
 ### 3. DNS Configuration
@@ -30,7 +30,7 @@
 
 ### DNS Propagation
 - **Expected time:** 10-60 minutes
-- **Check status:** `dig datavint.co` or visit https://dnschecker.org
+- **Check status:** `dig datavint.io` or visit https://dnschecker.org
 
 ---
 
@@ -38,12 +38,12 @@
 
 ### Backend API (Railway)
 - **Not started** - Dashboard deployment deferred
-- **Future URL:** api.datavint.co
+- **Future URL:** api.datavint.io
 - **Source:** server/ directory
 
 ### Frontend App (Vercel)
 - **Not started** - Dashboard deployment deferred
-- **Future URL:** app.datavint.co
+- **Future URL:** app.datavint.io
 - **Source:** client/ directory
 
 ---
@@ -52,39 +52,39 @@
 
 | Service | URL | Status |
 |---------|-----|--------|
-| **Landing Page** | https://datavint.co | ⏳ DNS propagating |
+| **Landing Page** | https://datavint.io | ⏳ DNS propagating |
 | **Landing Page (Vercel)** | https://datavint.vercel.app | ✅ Live |
-| **www redirect** | https://www.datavint.co | ⏳ DNS propagating |
-| Dashboard API | api.datavint.co | ⏳ Not deployed yet |
-| Dashboard App | app.datavint.co | ⏳ Not deployed yet |
+| **www redirect** | https://www.datavint.io | ⏳ DNS propagating |
+| Dashboard API | api.datavint.io | ⏳ Not deployed yet |
+| Dashboard App | app.datavint.io | ⏳ Not deployed yet |
 
 ---
 
 ## 🧪 Testing
 
-Once DNS propagates (check with `dig datavint.co`):
+Once DNS propagates (check with `dig datavint.io`):
 
 ### Test Landing Page
 ```bash
 # Check DNS resolution
-dig datavint.co +short
+dig datavint.io +short
 # Should show: 76.76.21.21
 
-dig www.datavint.co +short
+dig www.datavint.io +short
 # Should show: cname.vercel-dns.com
 
 # Test HTTPS
-curl -I https://datavint.co
+curl -I https://datavint.io
 # Should return: 200 OK
 
 # Open in browser
-open https://datavint.co
+open https://datavint.io
 ```
 
 ### Verify SSL Certificate
 - Vercel automatically provisions SSL certificates
 - Should see 🔒 in browser address bar
-- Certificate valid for datavint.co and www.datavint.co
+- Certificate valid for datavint.io and www.datavint.io
 
 ---
 
@@ -93,16 +93,16 @@ open https://datavint.co
 1. **Deploy Backend to Railway**
    - Follow: `deployment/DEPLOY_DATAVINT_CO.md`
    - Configure: `server/api/main.py` CORS settings
-   - Add custom domain: `api.datavint.co`
+   - Add custom domain: `api.datavint.io`
 
 2. **Deploy Frontend to Vercel**
    - Deploy: `client/` directory
    - Configure: `client/.env.production`
-   - Add custom domain: `app.datavint.co`
+   - Add custom domain: `app.datavint.io`
 
 3. **Test Full Stack**
-   - Upload CSV to app.datavint.co
-   - Verify API calls to api.datavint.co
+   - Upload CSV to app.datavint.io
+   - Verify API calls to api.datavint.io
    - Check data quality analysis
 
 ---
