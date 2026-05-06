@@ -8,7 +8,7 @@ Automatically detect and fix data quality issues before training ML models.
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](https://github.com/yourusername/datavint/releases)
+[![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](https://github.com/duochen13/datavint/releases)
 
 ## 🎉 What's New in v0.2
 
@@ -66,7 +66,7 @@ corrected_df = manifest.apply("train.csv")
 
 ```bash
 # From source (development)
-git clone https://github.com/yourusername/datavint.git
+git clone https://github.com/duochen13/datavint.git
 cd datavint
 pip install -e .
 
@@ -397,7 +397,7 @@ Contributions welcome! Please:
 
 **Development setup:**
 ```bash
-git clone https://github.com/yourusername/datavint.git
+git clone https://github.com/duochen13/datavint.git
 cd datavint
 pip install -e ".[dev]"  # Install with dev dependencies
 pytest  # Run tests
@@ -428,7 +428,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 📬 Contact
 
-- **GitHub Issues:** [Report bugs or request features](https://github.com/yourusername/datavint/issues)
+- **GitHub Issues:** [Report bugs or request features](https://github.com/duochen13/datavint/issues)
 - **Email:** your.email@example.com
 - **LinkedIn:** [Your Profile](https://linkedin.com/in/yourprofile)
 

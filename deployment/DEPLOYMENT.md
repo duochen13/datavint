@@ -39,7 +39,7 @@
 2. **Create New Project**
    - Click "New Project"
    - Select "Deploy from GitHub repo"
-   - Choose `hepta-ai` repository
+   - Choose `datavint` repository
 
 3. **Configure Backend Service**
    - Railway will auto-detect Python

@@ -33,7 +33,7 @@
 ### 2.2 Deploy Backend
 1. Click "**New Project**"
 2. Select "**Deploy from GitHub repo**"
-3. Choose your repository: `hepta-ai` (or `datavint`)
+3. Choose your repository: `datavint`
 4. Railway will auto-detect Python
 
 ### 2.3 Configure Backend Service
@@ -357,7 +357,7 @@ dig api.datavint.co
 - **Railway Docs**: https://docs.railway.app
 - **Vercel Docs**: https://vercel.com/docs
 - **Namecheap Support**: https://www.namecheap.com/support/
-- **DataVint Issues**: https://github.com/duochen13/hepta-ai/issues
+- **DataVint Issues**: https://github.com/duochen13/datavint/issues
 
 ---
 

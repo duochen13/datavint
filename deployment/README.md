@@ -76,4 +76,4 @@ File: `railway.json`
 For deployment issues, check:
 - Railway Docs: https://docs.railway.app
 - Vercel Docs: https://vercel.com/docs
-- DataVint Issues: https://github.com/duochen13/hepta-ai/issues
+- DataVint Issues: https://github.com/duochen13/datavint/issues
