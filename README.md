@@ -1,4 +1,5 @@
-https://www.datavint.io/
+**Website:** [www.datavint.io](https://www.datavint.io)<br>
+**Demo:** [www.datavint.io/playground](https://www.datavint.io/playground)
 
 # DataVint
 
@@ -6,7 +7,7 @@ https://www.datavint.io/
 
 Automatically detect and fix data quality issues before training ML models.
 
-> Inspired by the Heptapod language in *Arrival* — finding hidden patterns in your training data.
+> A compiler for your training data—optimize datasets without changing your model.
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
