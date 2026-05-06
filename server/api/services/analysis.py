@@ -61,3 +61,7 @@ class DatasetCache:
         """Get number of cached datasets"""
         self._cleanup()
         return len(self._cache)
+
+
+# Singleton instance to be shared across all routes
+dataset_cache = DatasetCache()

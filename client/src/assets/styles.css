@@ -1,0 +1,86 @@
+/* DataVint Global Styles - Apple Minimalist Theme */
+
+/* CSS Variables */
+:root {
+  /* Apple-inspired minimalist colors */
+  --bg-dark: #ffffff;
+  --bg-panel: #f5f5f7;
+  --bg-hover: #e8e8ed;
+  --bg-editor: #fafafa;
+  --border: #d2d2d7;
+  --border-active: #007aff;
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-muted: #86868b;
+  --accent-cyan: #007aff;
+  --accent-lime: #34c759;
+  --accent-purple: #af52de;
+  --accent-orange: #ff3b30;
+  --shadow-glow: rgba(0, 122, 255, 0.1);
+
+  /* Syntax Colors - Xcode Light */
+  --syntax-keyword: #ad3da4;      /* Purple */
+  --syntax-function: #272ad8;     /* Blue */
+  --syntax-string: #d12f1b;       /* Red */
+  --syntax-comment: #6e6e73;      /* Gray */
+  --syntax-number: #272ad8;       /* Blue */
+
+  /* Typography - Apple System Fonts */
+  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, 'Courier New', monospace;
+}
+
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100vh;
+}
+
+/* Scrollbar Styling - Apple style */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 3px solid var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Button Styles */
+button {
+  font-family: var(--font-ui);
+}
+
+/* Link Styles */
+a {
+  color: var(--accent-cyan);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}

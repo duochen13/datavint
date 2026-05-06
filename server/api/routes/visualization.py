@@ -6,12 +6,9 @@ from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 
 from ..models.response import IssuesResponse, ManifestResponse, IssueItem
-from ..services.analysis import DatasetCache
+from ..services.analysis import dataset_cache
 
 router = APIRouter()
-
-# Shared cache with data routes
-cache = DatasetCache()
 
 
 @router.get("/issues", response_model=IssuesResponse)
@@ -19,7 +16,7 @@ async def get_issues(dataset_id: str = Query(..., description="Dataset ID")):
     """
     Get detected issues for visualization
     """
-    df, label_col = cache.get(dataset_id)
+    df, label_col = dataset_cache.get(dataset_id)
     if df is None:
         raise HTTPException(status_code=404, detail="Dataset not found")
 
@@ -73,7 +70,7 @@ async def generate_manifest_endpoint(
     """
     Generate manifest from detected issues
     """
-    df, label_col = cache.get(dataset_id)
+    df, label_col = dataset_cache.get(dataset_id)
     if df is None:
         raise HTTPException(status_code=404, detail="Dataset not found")
 
