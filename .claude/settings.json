@@ -1,5 +1,1 @@
-{
-  "hooks": {
-    "sessionStart": ".claude/load-memory.sh"
-  }
-}
+{}

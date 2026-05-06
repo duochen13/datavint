@@ -1,5 +1,27 @@
 # DataVint Project Instructions
 
+## Wiki Documentation
+
+**At the start of each session, load the wiki to get all project documentation:**
+
+Run this command to load all documentation:
+```bash
+./.claude/load-memory.sh
+```
+
+This loads:
+- Memory files (patterns, decisions, gotchas, tips)
+- All wiki documentation (18 markdown files covering architecture, API, guides, deployment, etc.)
+
+The wiki contains:
+- `wiki/architecture/` - System architecture
+- `wiki/api/` - API reference docs
+- `wiki/guides/` - Usage guides
+- `wiki/deployment/` - Deployment documentation
+- `wiki/features/` - Feature specifications
+- `wiki/notebooks/` - Notebook documentation
+- `wiki/changelog/` - Design decisions and history
+
 ## Memory System
 
 Project knowledge is stored in the `memory/` folder:
