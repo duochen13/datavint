@@ -108,6 +108,42 @@ Recommendation: [specific fix]
 **Implementation Priority:** Medium-High
 ```
 
+### Phase 2: Engineering Review (Hybrid Approach)
+
+**After completing the basic issue review, if the issue scores 7/10 or higher:**
+
+1. **Convert issue to plan format:**
+   - Extract implementation requirements from the issue
+   - Structure as a markdown plan document
+   - Save to `/tmp/issue-{number}-plan.md` with sections:
+     - Problem Statement
+     - Proposed Solution
+     - Implementation Steps
+     - Technical Considerations
+     - Success Criteria
+
+2. **Invoke /plan-eng-review:**
+   - Use the Skill tool: `Skill("plan-eng-review")`
+   - Point it to the converted plan document
+   - Get deep architecture analysis covering:
+     - Edge cases and error handling
+     - Testing strategy
+     - Performance considerations
+     - Security implications
+     - Maintenance burden
+
+3. **Synthesize results:**
+   - Combine issue review + engineering review findings
+   - Highlight any critical concerns from engineering review
+   - Provide unified implementation recommendations
+   - Update issue quality score if engineering review reveals issues
+
+**Skip Phase 2 if:**
+- Score < 7/10 (needs issue refinement first)
+- Issue is documentation-only
+- Issue is a trivial bug fix (< 10 lines of code)
+- User explicitly requests to skip engineering review
+
 ## Skill routing
 
 When the user's request matches an available skill, invoke it via the Skill tool. When in doubt, invoke the skill.

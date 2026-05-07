@@ -1,8 +1,12 @@
 #!/bin/bash
-# Automated Issue Review Hook
+# Automated Issue Review Hook - Hybrid Approach
 #
-# This hook detects when GitHub issues are created and automatically
-# triggers a comprehensive review.
+# Workflow:
+# 1. Detect new GitHub issues (created within 60 seconds)
+# 2. Run basic Issue Review (quick validation)
+# 3. If score >= 7/10, offer to convert to plan and run /plan-eng-review
+#
+# This provides both quick scope validation and deep engineering analysis.
 
 # Check if gh CLI is available
 if ! command -v gh &> /dev/null; then
@@ -15,22 +19,32 @@ RECENT_ISSUE=$(gh issue list --limit 1 --json number,createdAt --jq '.[] | selec
 
 if [ -n "$RECENT_ISSUE" ]; then
     echo "═══════════════════════════════════════════════════════════"
-    echo "🤖 AUTOMATED ISSUE REVIEW TRIGGERED"
+    echo "🤖 HYBRID ISSUE REVIEW WORKFLOW TRIGGERED"
     echo "═══════════════════════════════════════════════════════════"
     echo ""
-    echo "Issue #$RECENT_ISSUE was just created. Running comprehensive review..."
+    echo "Issue #$RECENT_ISSUE was just created."
     echo ""
-    echo "Please review issue #$RECENT_ISSUE using the Issue Review Protocol:"
+    echo "📋 PHASE 1: Issue Review (Quick Validation)"
+    echo "─────────────────────────────────────────────────────────"
+    echo "Running basic issue review to validate scope and feasibility..."
     echo ""
-    echo "1. View the issue: gh issue view $RECENT_ISSUE"
-    echo "2. Provide comprehensive review covering:"
-    echo "   - ✅ Strengths (2-4 points)"
-    echo "   - ⚠️ Concerns & Gaps (3-6 points)"
-    echo "   - 🔍 Technical Feasibility Analysis"
-    echo "   - 📝 Recommendations"
-    echo "   - ✅ Final Verdict (Score/10)"
+    echo "Review issue #$RECENT_ISSUE covering:"
+    echo "  1. ✅ Strengths (2-4 points)"
+    echo "  2. ⚠️ Concerns & Gaps (3-6 points)"
+    echo "  3. 🔍 Technical Feasibility Analysis"
+    echo "  4. 📝 Recommendations"
+    echo "  5. ✅ Final Verdict (Score/10)"
+    echo ""
+    echo "📐 PHASE 2: Engineering Review (If Score >= 7/10)"
+    echo "─────────────────────────────────────────────────────────"
+    echo "If issue passes initial review:"
+    echo "  → Convert issue to plan format"
+    echo "  → Run /plan-eng-review for deep architecture analysis"
+    echo "  → Get implementation recommendations"
     echo ""
     echo "═══════════════════════════════════════════════════════════"
+    echo ""
+    echo "HOOK_ACTION: review-issue-$RECENT_ISSUE"
 fi
 
 exit 0
