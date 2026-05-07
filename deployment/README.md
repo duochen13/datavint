@@ -20,15 +20,17 @@ This directory contains all deployment-related configuration and documentation f
 
 ### Configuration Files
 
-- **Procfile** - Railway/Heroku deployment configuration
-  - Specifies start command for backend server
-  - Used by Railway during deployment
-
-- **railway.json** - Railway service configuration
-  - Build settings and environment variables
-  - Service configuration for Railway platform
+Railway configuration has been moved to `/server/` for better organization:
+- **Procfile** → `/server/Procfile`
+- **railway.json** → `/server/railway.json`
+- See `/server/RAILWAY.md` for Railway deployment details
 
 ### Scripts
+
+- **vercel/build.sh** - Vercel build script (moved from root for organization)
+  - Builds Vue.js dashboard (client/)
+  - Copies landing page (docs/)
+  - Creates combined deployment structure
 
 - **deploy.sh** - Quick deployment verification script
   - Builds frontend locally
