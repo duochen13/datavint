@@ -15,13 +15,6 @@ import time
 from collections import defaultdict
 
 # Import datavint library functions
-import sys
-from pathlib import Path
-
-# Add project root to path for datavint imports
-project_root = Path(__file__).parent.parent.parent.parent
-sys.path.insert(0, str(project_root))
-
 import datavint as vint
 
 logger = logging.getLogger(__name__)
