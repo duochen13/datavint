@@ -178,14 +178,18 @@ onUnmounted(() => {
 <template>
   <div class="playground-view">
     <div class="split-panel">
-      <!-- Collapse/Expand Button -->
+      <!-- Collapse/Expand Button (positioned in ChatPanel header area) -->
       <button
         class="chatbox-toggle"
         @click="toggleChatbox"
         :title="chatboxCollapsed ? 'Expand chatbox (Ctrl+B)' : 'Collapse chatbox (Ctrl+B)'"
         :aria-label="chatboxCollapsed ? 'Expand chatbox' : 'Collapse chatbox'"
       >
-        {{ chatboxCollapsed ? '›' : '‹' }}
+        <div class="hamburger-icon">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </button>
 
       <!-- Chat Panel (Left - 25%) -->
@@ -265,37 +269,58 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* Chatbox Toggle Button */
+/* Chatbox Toggle Button - positioned in header area */
 .chatbox-toggle {
   position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 12px;
+  right: calc(75% + 12px); /* Position in ChatPanel header area */
   z-index: 100;
-  width: 24px;
-  height: 48px;
-  background: var(--bg-panel);
-  border: 2px solid var(--border);
-  border-left: none;
-  border-radius: 0 8px 8px 0;
-  color: var(--text-secondary);
-  font-size: 18px;
-  font-weight: 700;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 4px;
 }
 
 .chatbox-toggle:hover {
   background: var(--bg-hover);
-  border-color: var(--accent-cyan);
-  color: var(--accent-cyan);
 }
 
 .chatbox-toggle:active {
-  transform: translateY(-50%) scale(0.95);
+  transform: scale(0.95);
+}
+
+/* Hamburger Icon (3 horizontal lines) */
+.hamburger-icon {
+  width: 20px;
+  height: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+.hamburger-icon span {
+  display: block;
+  height: 2px;
+  background: var(--text-secondary);
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.chatbox-toggle:hover .hamburger-icon span {
+  background: var(--accent-cyan);
+}
+
+/* When collapsed, adjust button position to left edge */
+.split-panel:has(.left-panel.collapsed) .chatbox-toggle {
+  right: auto;
+  left: 12px;
 }
 
 /* Chat Panel with Transitions */
@@ -325,6 +350,11 @@ onUnmounted(() => {
 /* Reclaim chatbox space when collapsed */
 .split-panel:has(.left-panel.collapsed) .right-panel {
   margin-left: -25%;
+}
+
+/* Hide the READY status indicator (replaced by toggle button) */
+.left-panel :deep(.status-indicator) {
+  display: none;
 }
 
 /* Tab Bar */
