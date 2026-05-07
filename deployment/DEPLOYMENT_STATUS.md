@@ -1,6 +1,6 @@
 # DataVint Deployment Status
 
-**Last Updated:** May 6, 2026
+**Last Updated:** May 7, 2026
 
 ---
 
@@ -8,43 +8,61 @@
 
 ### 1. Domain Registration
 - **Domain:** datavint.io
-- **Registrar:** Namecheap (or other)
+- **Registrar:** Namecheap
 - **Status:** Registered ✓
 
 ### 2. Landing Page Deployment
 - **Platform:** Vercel
 - **Source:** docs/ directory
 - **Vercel URL:** https://datavint.vercel.app
-- **Production URL:** https://datavint.io (pending DNS propagation)
+- **Production URL:** https://www.datavint.io
 - **Status:** Deployed ✓
+- **Features:**
+  - SEO optimized (sitemap.xml, robots.txt, meta tags)
+  - All buttons navigate to /playground
+  - SSL certificate active
 
-### 3. DNS Configuration
-- **A Record:** @ → 76.76.21.21
-- **CNAME Record:** www → cname.vercel-dns.com
-- **Status:** Configured at Namecheap ✓
-- **Propagation:** In progress (10-60 minutes)
-
----
-
-## 🔄 In Progress
-
-### DNS Propagation
-- **Expected time:** 10-60 minutes
-- **Check status:** `dig datavint.io` or visit https://dnschecker.org
-
----
-
-## ⏳ Pending (Dashboard - For Later)
-
-### Backend API (Railway)
-- **Not started** - Dashboard deployment deferred
-- **Future URL:** api.datavint.io
-- **Source:** server/ directory
-
-### Frontend App (Vercel)
-- **Not started** - Dashboard deployment deferred
-- **Future URL:** app.datavint.io
+### 3. Frontend Dashboard Deployment
+- **Platform:** Vercel (unified deployment)
 - **Source:** client/ directory
+- **Production URL:** https://www.datavint.io/playground
+- **Status:** Deployed ✓
+- **Environment Variables:**
+  - `VITE_API_URL=https://api.datavint.io/api` (configured in Vercel dashboard)
+
+### 4. Backend API Deployment
+- **Platform:** Railway
+- **Source:** server/ directory
+- **Railway URL:** https://web-production-60d2c.up.railway.app
+- **Production URL:** https://api.datavint.io
+- **Status:** Deployed ✓
+- **Configuration:**
+  - Root Directory: `server`
+  - Start Command: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
+  - Environment Variables: `PORT=8000`, `PYTHON_VERSION=3.9`
+
+### 5. DNS Configuration
+- **A Record:** @ → 76.76.21.21 (Vercel)
+- **CNAME Record:** www → cname.vercel-dns.com (Vercel)
+- **CNAME Record:** api → ese1fx1z.up.railway.app (Railway)
+- **Status:** All configured and propagated ✓
+
+### 6. SSL Certificates
+- **datavint.io:** Active ✓
+- **www.datavint.io:** Active ✓
+- **api.datavint.io:** Active ✓
+
+---
+
+## 🎉 Fully Operational
+
+### Full Stack Working
+- ✅ Landing page live at https://www.datavint.io
+- ✅ Dashboard live at https://www.datavint.io/playground
+- ✅ Backend API live at https://api.datavint.io
+- ✅ CSV upload and data quality analysis working end-to-end
+- ✅ All SSL certificates provisioned
+- ✅ All DNS records propagated
 
 ---
 
