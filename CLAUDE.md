@@ -32,6 +32,82 @@ Project knowledge is stored in the `memory/` folder:
 
 Update these files when you learn something new or make important decisions.
 
+## Issue Review Protocol
+
+**Automatically review every GitHub issue after creation.**
+
+When a user creates a GitHub issue (via `gh issue create`), immediately run:
+```bash
+gh issue view <issue_number>
+```
+
+Then provide a comprehensive review covering:
+
+### Review Structure
+
+1. **✅ Strengths** (2-4 points)
+   - What's well-defined
+   - Clear value propositions
+   - Good structure/organization
+
+2. **⚠️ Concerns & Gaps** (3-6 points)
+   - Ambiguities requiring clarification
+   - Missing technical details
+   - Incomplete specifications
+   - Broken links or invalid assumptions
+
+3. **🔍 Technical Feasibility Analysis**
+   - Implementation estimate (hours/days)
+   - Backend/frontend breakdown
+   - Dependency requirements
+   - Total effort calculation
+
+4. **📝 Recommendations**
+   - Explicit decisions needed (e.g., "Choose approach X for MVP")
+   - Prerequisites to add
+   - Simplifications to consider
+   - Related issues to link
+
+5. **✅ Final Verdict**
+   - Issue quality score (X/10)
+   - Blocking issues identified
+   - Recommendation: Approve / Approve with modifications / Needs rework
+   - Implementation priority (High/Medium/Low)
+
+### Example Review Format
+
+```markdown
+## Issue #X Review: [Title]
+
+### ✅ Strengths
+- Clear user value proposition
+- Well-structured proposal with mockups
+- Security concerns identified upfront
+
+### ⚠️ Concerns & Gaps
+**1. Missing Detail X**
+Current: [quote from issue]
+Problem: [why this is incomplete]
+Recommendation: [specific fix]
+
+### 🔍 Technical Feasibility Analysis
+**MVP Implementation Estimate:**
+- Backend: 2-3 hours
+- Frontend: 3-4 hours
+- Total: 5-7 hours (1 day)
+
+### 📝 Recommendations
+1. Update issue with explicit MVP decision
+2. Add prerequisites section
+3. Validate demo datasets exist
+
+### ✅ Final Verdict
+**Issue Quality:** 8/10
+**Blocking Issues:** [list]
+**Recommendation:** ✅ Approve with modifications
+**Implementation Priority:** Medium-High
+```
+
 ## Skill routing
 
 When the user's request matches an available skill, invoke it via the Skill tool. When in doubt, invoke the skill.
