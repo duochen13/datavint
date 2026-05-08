@@ -11,58 +11,16 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
 import logging
-import time
-from collections import defaultdict
 
 # Import datavint library functions
 import datavint as vint
 
+# Import shared rate limiter
+from ..utils.rate_limit import rate_limiter
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-
-# Simple in-memory rate limiter
-class RateLimiter:
-    """
-    Simple in-memory rate limiter.
-
-    Tracks requests per IP address with a sliding window.
-    """
-    def __init__(self, max_requests: int = 10, window_seconds: int = 60):
-        self.max_requests = max_requests
-        self.window_seconds = window_seconds
-        self.requests: Dict[str, list[float]] = defaultdict(list)
-
-    def is_allowed(self, client_ip: str) -> bool:
-        """Check if request is allowed under rate limit."""
-        now = time.time()
-
-        # Clean old requests outside the window
-        self.requests[client_ip] = [
-            req_time for req_time in self.requests[client_ip]
-            if now - req_time < self.window_seconds
-        ]
-
-        # Check if under limit
-        if len(self.requests[client_ip]) >= self.max_requests:
-            return False
-
-        # Record this request
-        self.requests[client_ip].append(now)
-        return True
-
-    def get_retry_after(self, client_ip: str) -> int:
-        """Get seconds until rate limit resets."""
-        if not self.requests[client_ip]:
-            return 0
-
-        oldest_request = min(self.requests[client_ip])
-        return int(self.window_seconds - (time.time() - oldest_request)) + 1
-
-
-# Initialize rate limiter: 10 requests per minute per IP
-rate_limiter = RateLimiter(max_requests=10, window_seconds=60)
 
 
 # Request/Response models

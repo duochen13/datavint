@@ -7,6 +7,9 @@ uvicorn[standard]==0.32.0
 pydantic==2.9.2
 python-multipart==0.0.12
 
+# LLM integration for code generation
+anthropic>=0.18.0
+
 # Core dependencies (also defined in pyproject.toml)
 pandas>=2.0.0
 numpy>=1.24.0

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, nextTick } from 'vue'
+import { uploadAndAnalyzeCSV } from '../services/codePlaygroundApi'
 
 const emit = defineEmits(['send-message'])
 
@@ -7,6 +8,9 @@ const messages = ref([])
 const input = ref('')
 const chatMessages = ref(null)
 const textarea = ref(null)
+const fileInput = ref(null)
+const uploadedFile = ref(null)
+const isAnalyzing = ref(false)
 
 function addMessage(content, type = 'user') {
   messages.value.push({
@@ -22,17 +26,69 @@ function addMessage(content, type = 'user') {
   })
 }
 
-function sendMessage() {
-  const message = input.value.trim()
-  if (message) {
-    addMessage(message, 'user')
-    emit('send-message', message)
-    input.value = ''
+function handleFileUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
 
-    // Reset textarea height
-    if (textarea.value) {
-      textarea.value.style.height = 'auto'
+  uploadedFile.value = file
+  addMessage(`📎 Uploaded: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`, 'assistant')
+  addMessage('What would you like to analyze? (e.g., "check for missing values", "find duplicates")', 'assistant')
+}
+
+async function sendMessage() {
+  const message = input.value.trim()
+  if (!message) return
+
+  addMessage(message, 'user')
+  input.value = ''
+
+  // Reset textarea height
+  if (textarea.value) {
+    textarea.value.style.height = 'auto'
+  }
+
+  // If file is uploaded, analyze it
+  if (uploadedFile.value) {
+    isAnalyzing.value = true
+    addMessage('🔄 Analyzing your dataset...', 'assistant')
+
+    try {
+      const result = await uploadAndAnalyzeCSV(uploadedFile.value, message)
+
+      if (result.success) {
+        // Show output message
+        addMessage(result.output, 'assistant')
+
+        // Show generated code
+        if (result.generated_code) {
+          addMessage('Generated code:\n```python\n' + result.generated_code + '\n```', 'assistant')
+        }
+
+        // Show additional results if available
+        if (result.data && result.data.issues) {
+          const issueCount = Array.isArray(result.data.issues) ? result.data.issues.length : 0
+          if (issueCount > 0) {
+            addMessage(`📊 Found ${issueCount} data quality issues. View details in the results panel.`, 'assistant')
+          }
+        }
+      } else {
+        // Show error
+        addMessage('❌ Analysis failed: ' + (result.error || 'Unknown error'), 'assistant')
+      }
+    } catch (error) {
+      console.error('Analysis error:', error)
+      addMessage('❌ Failed to analyze: ' + error.message, 'assistant')
+    } finally {
+      isAnalyzing.value = false
+      uploadedFile.value = null
+      // Reset file input
+      if (fileInput.value) {
+        fileInput.value.value = ''
+      }
     }
+  } else {
+    // Normal chat message (no file uploaded)
+    emit('send-message', message)
   }
 }
 
@@ -82,17 +138,40 @@ function handleInput() {
     </div>
 
     <div class="chat-input-container">
+      <div class="upload-section">
+        <input
+          ref="fileInput"
+          type="file"
+          accept=".csv"
+          @change="handleFileUpload"
+          style="display: none"
+        />
+        <button
+          class="upload-button"
+          @click="fileInput.click()"
+          :disabled="isAnalyzing"
+        >
+          📎 Upload CSV
+        </button>
+        <span v-if="uploadedFile" class="uploaded-filename">
+          {{ uploadedFile.name }}
+        </span>
+      </div>
+
       <div class="chat-input-wrapper">
         <textarea
           ref="textarea"
           v-model="input"
           class="chat-input"
-          placeholder="Ask about data quality..."
+          :placeholder="uploadedFile ? 'Ask about your dataset...' : 'Ask about data quality...'"
           rows="1"
           @keypress="handleKeypress"
           @input="handleInput"
+          :disabled="isAnalyzing"
         ></textarea>
-        <button class="send-button" @click="sendMessage">➤</button>
+        <button class="send-button" @click="sendMessage" :disabled="isAnalyzing">
+          {{ isAnalyzing ? '⏳' : '➤' }}
+        </button>
       </div>
     </div>
   </div>
@@ -260,6 +339,42 @@ function handleInput() {
   padding: 16px;
   border-top: 2px solid var(--border);
   background: var(--bg-dark);
+}
+
+.upload-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.upload-button {
+  padding: 8px 16px;
+  background: var(--bg-panel);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upload-button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.upload-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.uploaded-filename {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
 }
 
 .chat-input-wrapper {

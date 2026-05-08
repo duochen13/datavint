@@ -44,3 +44,22 @@ export async function codePlaygroundHealth() {
   const response = await apiClient.get('/code/health')
   return response.data
 }
+
+/**
+ * Upload CSV and analyze with natural language prompt
+ * @param {File} file - CSV file to analyze
+ * @param {string} prompt - Natural language analysis request
+ * @returns {Promise<{success: boolean, generated_code: string, output: string, data?: object, error?: string}>}
+ */
+export async function uploadAndAnalyzeCSV(file, prompt = 'profile this dataset') {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('prompt', prompt)
+
+  const response = await apiClient.post('/chat/analyze-csv', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 30000  // 30 sec timeout for LLM call
+  })
+
+  return response.data
+}
