@@ -241,7 +241,7 @@ body > *:not(#particle-canvas) {
 
 /* Problem Section */
 .problem-section {
-    background: #FAFAFA;
+    background: #000000;
     padding: 100px 40px;
     max-width: 1200px;
     margin: 0 auto;
@@ -250,7 +250,7 @@ body > *:not(#particle-canvas) {
 .section-headline {
     font-size: 56px;
     font-weight: 700;
-    color: #0F172A;
+    color: #FFFFFF;
     text-align: center;
     margin-bottom: 60px;
 }
@@ -276,11 +276,11 @@ body > *:not(#particle-canvas) {
 }
 
 .problem-card {
-    background: #FFFFFF;
-    border: 1px solid #E4E4E7;
+    background: #18181B;
+    border: 2px solid #27272A;
     border-radius: 12px;
     padding: 32px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -301,12 +301,12 @@ body > *:not(#particle-canvas) {
 .problem-card h3 {
     font-size: 22px;
     font-weight: 600;
-    color: #0F172A;
+    color: #FFFFFF;
 }
 
 .problem-card p {
     font-size: 16px;
-    color: #64748B;
+    color: #A1A1AA;
     line-height: 1.5;
 }
 
@@ -526,7 +526,7 @@ body > *:not(#particle-canvas) {
 
 /* Validation Pipeline Section */
 .validation-section {
-    background: #FAFAFA;
+    background: #000000;
     padding: 100px 40px;
     max-width: 1200px;
     margin: 0 auto;
@@ -540,11 +540,11 @@ body > *:not(#particle-canvas) {
 }
 
 .workflow-card {
-    background: #FFFFFF;
-    border: 2px solid #E4E4E7;
+    background: #18181B;
+    border: 2px solid #27272A;
     border-radius: 16px;
     padding: 32px;
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -573,29 +573,29 @@ body > *:not(#particle-canvas) {
 .workflow-card h3 {
     font-size: 22px;
     font-weight: 700;
-    color: #0F172A;
+    color: #FFFFFF;
 }
 
 .workflow-card p {
     font-size: 16px;
-    color: #64748B;
+    color: #A1A1AA;
     line-height: 1.5;
 }
 
 /* Results Section */
 .results-section {
-    background: #FAFAFA;
+    background: #000000;
     padding: 100px 40px;
     max-width: 1200px;
     margin: 0 auto;
 }
 
 .metrics-card {
-    background: #FFFFFF;
-    border: 2px solid #E4E4E7;
+    background: #18181B;
+    border: 2px solid #27272A;
     border-radius: 20px;
     padding: 48px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
     display: flex;
     justify-content: space-around;
     gap: 48px;
@@ -627,13 +627,13 @@ body > *:not(#particle-canvas) {
 .metric-label {
     font-size: 15px;
     font-weight: 500;
-    color: #64748B;
+    color: #A1A1AA;
     text-align: center;
 }
 
 .metric-detail {
     font-size: 13px;
-    color: #94A3B8;
+    color: #A1A1AA;
     text-align: center;
 }
 
