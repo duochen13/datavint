@@ -77,21 +77,30 @@ def load_demo_dataset(name: str) -> pd.DataFrame:
     dataset_relative_path = DEMO_DATASETS[name]
 
     # Try multiple possible locations for datasets
-    # 1. Standard location: project_root/raw_data/...
-    dataset_path = project_root / dataset_relative_path
+    import os
+    cwd = Path(os.getcwd())
 
-    # 2. Railway deployment: server/raw_data/... (when Railway root is /server)
-    #    In Railway, cwd might be /app/server, so check ../server/raw_data
-    if not dataset_path.exists():
-        import os
-        cwd = Path(os.getcwd())
-        # If we're in /app/server, datasets are at /app/server/raw_data
-        alt_path = cwd / dataset_relative_path
-        if alt_path.exists():
-            dataset_path = alt_path
+    # Collect all paths we'll try
+    paths_to_try = [
+        project_root / dataset_relative_path,  # 1. Standard: /app/raw_data/...
+        cwd / dataset_relative_path,            # 2. Railway: /app/server/raw_data/...
+    ]
 
-    if not dataset_path.exists():
-        raise FileNotFoundError(f"Dataset file not found: {dataset_path}")
+    # Try each path and use the first one that exists
+    dataset_path = None
+    for path in paths_to_try:
+        if path.exists():
+            dataset_path = path
+            break
+
+    if dataset_path is None:
+        # Include debug info in error message
+        paths_checked = '\n  '.join(str(p) for p in paths_to_try)
+        raise FileNotFoundError(
+            f"Dataset '{name}' not found in any of these locations:\n"
+            f"  {paths_checked}\n"
+            f"  (cwd={cwd}, project_root={project_root})"
+        )
 
     return pd.read_csv(dataset_path)
 
