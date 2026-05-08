@@ -1,32 +1,32 @@
-/* DataVint Global Styles - Apple Minimalist Theme */
+/* DataVint Global Styles - Dark Theme (matches website) */
 
 /* CSS Variables */
 :root {
-  /* Apple-inspired minimalist colors */
-  --bg-dark: #ffffff;
-  --bg-panel: #f5f5f7;
-  --bg-hover: #e8e8ed;
-  --bg-editor: #fafafa;
-  --border: #d2d2d7;
-  --border-active: #007aff;
-  --text-primary: #1d1d1f;
-  --text-secondary: #6e6e73;
-  --text-muted: #86868b;
-  --accent-cyan: #007aff;
-  --accent-lime: #34c759;
-  --accent-purple: #af52de;
-  --accent-orange: #ff3b30;
-  --shadow-glow: rgba(0, 122, 255, 0.1);
+  /* Dark theme colors (matching website at www.datavint.io) */
+  --bg-dark: #000000;
+  --bg-panel: #18181B;
+  --bg-hover: #27272A;
+  --bg-editor: #18181B;
+  --border: #27272A;
+  --border-active: #6366F1;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A1A1AA;
+  --text-muted: #71717A;
+  --accent-cyan: #6366F1;
+  --accent-lime: #10B981;
+  --accent-purple: #6366F1;
+  --accent-orange: #DC2626;
+  --shadow-glow: rgba(99, 102, 241, 0.2);
 
-  /* Syntax Colors - Xcode Light */
-  --syntax-keyword: #ad3da4;      /* Purple */
-  --syntax-function: #272ad8;     /* Blue */
-  --syntax-string: #d12f1b;       /* Red */
-  --syntax-comment: #6e6e73;      /* Gray */
-  --syntax-number: #272ad8;       /* Blue */
+  /* Syntax Colors - Dark theme */
+  --syntax-keyword: #C084FC;      /* Purple */
+  --syntax-function: #60A5FA;     /* Blue */
+  --syntax-string: #34D399;       /* Green */
+  --syntax-comment: #71717A;      /* Gray */
+  --syntax-number: #FBBF24;       /* Yellow */
 
-  /* Typography - Apple System Fonts */
-  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  /* Typography */
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, 'Courier New', monospace;
 }
 
@@ -50,7 +50,7 @@ body {
   height: 100vh;
 }
 
-/* Scrollbar Styling - Apple style */
+/* Scrollbar Styling - Dark theme */
 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;
@@ -61,13 +61,13 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   border: 3px solid var(--bg-dark);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Button Styles */

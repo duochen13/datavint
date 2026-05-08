@@ -47,10 +47,10 @@ const route = useRoute()
 
 /* Header */
 .header {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   display: flex;
   align-items: stretch;
   height: 52px;
@@ -92,7 +92,7 @@ const route = useRoute()
   padding: 0 20px;
   background: none;
   border: none;
-  border-right: 1px solid rgba(0, 0, 0, 0.04);
+  border-right: 1px solid var(--border);
   color: var(--text-secondary);
   font-family: var(--font-ui);
   font-size: 13px;
