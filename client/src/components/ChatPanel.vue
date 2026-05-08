@@ -1,5 +1,5 @@
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted, watch } from 'vue'
 import { uploadAndAnalyzeCSV } from '../services/codePlaygroundApi'
 
 const emit = defineEmits(['send-message'])
@@ -11,6 +11,51 @@ const textarea = ref(null)
 const fileInput = ref(null)
 const uploadedFile = ref(null)
 const isAnalyzing = ref(false)
+
+// Local storage key for chat history
+const CHAT_HISTORY_KEY = 'datavint_chat_history'
+
+// Load chat history on mount
+onMounted(() => {
+  loadChatHistory()
+})
+
+// Watch messages and save to localStorage whenever they change
+watch(messages, () => {
+  saveChatHistory()
+}, { deep: true })
+
+function loadChatHistory() {
+  try {
+    const saved = localStorage.getItem(CHAT_HISTORY_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      messages.value = parsed
+
+      // Scroll to bottom after loading
+      nextTick(() => {
+        if (chatMessages.value) {
+          chatMessages.value.scrollTop = chatMessages.value.scrollHeight
+        }
+      })
+    }
+  } catch (error) {
+    console.error('Failed to load chat history:', error)
+  }
+}
+
+function saveChatHistory() {
+  try {
+    localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages.value))
+  } catch (error) {
+    console.error('Failed to save chat history:', error)
+  }
+}
+
+function clearChatHistory() {
+  messages.value = []
+  localStorage.removeItem(CHAT_HISTORY_KEY)
+}
 
 function addMessage(content, type = 'user') {
   messages.value.push({
@@ -111,9 +156,19 @@ function handleInput() {
   <div class="chat-panel">
     <div class="panel-header">
       <div class="panel-title">Assistant</div>
-      <div class="status-indicator">
-        <div class="status-dot"></div>
-        <span>READY</span>
+      <div class="header-controls">
+        <div class="status-indicator">
+          <div class="status-dot"></div>
+          <span>READY</span>
+        </div>
+        <button
+          v-if="messages.length > 0"
+          class="clear-history-btn"
+          @click="clearChatHistory"
+          title="Clear chat history"
+        >
+          🗑️ Clear
+        </button>
       </div>
     </div>
 
@@ -202,6 +257,12 @@ function handleInput() {
   letter-spacing: 0.5px;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .status-indicator {
   display: flex;
   align-items: center;
@@ -211,6 +272,26 @@ function handleInput() {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.clear-history-btn {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.clear-history-btn:hover {
+  background: rgba(255, 82, 82, 0.1);
+  border-color: #ff5252;
+  color: #ff5252;
 }
 
 .status-dot {
