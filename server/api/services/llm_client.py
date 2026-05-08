@@ -142,7 +142,7 @@ Return ONLY the Python code in a ```python code block."""
     # Call Claude API
     try:
         message = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-3-5-sonnet-20240620",  # Latest stable Claude 3.5 Sonnet
             max_tokens=1024,
             temperature=0,  # Deterministic for security
             system=SYSTEM_PROMPT,
