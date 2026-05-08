@@ -1,18 +1,13 @@
-# Install local datavint package from repo root
+# Install parent datavint package
 -e ..
 
 # FastAPI and server dependencies
 fastapi==0.115.0
 uvicorn[standard]==0.32.0
 pydantic==2.9.2
-python-multipart==0.0.12  # For file uploads
+python-multipart==0.0.12
 
-# Core DataVint dependencies (inherited from datavint package, but kept for explicitness)
+# Core dependencies (also defined in pyproject.toml)
 pandas>=2.0.0
 numpy>=1.24.0
 scipy>=1.10.0
-
-# Development
-pytest>=7.4.0
-pytest-asyncio>=0.21.0
-httpx>=0.24.0  # For testing async endpoints
