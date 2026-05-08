@@ -1,5 +1,5 @@
-# Install local datavint package (now in /server)
--e .
+# Install parent datavint package
+-e ..
 
 # FastAPI and server dependencies
 fastapi==0.115.0

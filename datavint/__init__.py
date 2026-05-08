@@ -44,7 +44,7 @@ __version__ = "0.2.0"
 
 # Demo datasets registry
 DEMO_DATASETS = {
-    'titanic': 'playground/raw_data/titanic/titanic.csv'
+    'titanic': 'raw_data/titanic/titanic.csv'
 }
 
 
