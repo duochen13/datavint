@@ -176,8 +176,10 @@ body > *:not(#particle-canvas) {
 }
 
 .btn-primary:hover {
-    box-shadow: 0 6px 30px rgba(99, 102, 241, 0.6);
-    transform: translateY(-2px);
+    background: #FFFFFF;
+    color: #6366F1;
+    box-shadow: 0 6px 30px rgba(255, 255, 255, 0.6);
+    transform: translateY(-2px) scale(1.05);
 }
 
 .btn-secondary {
@@ -194,8 +196,11 @@ body > *:not(#particle-canvas) {
 }
 
 .btn-secondary:hover {
+    background: #FFFFFF;
+    color: #6366F1;
+    border-color: #FFFFFF;
     box-shadow: 0 4px 16px rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.05);
 }
 
 /* Trust Bar */
@@ -682,8 +687,10 @@ body > *:not(#particle-canvas) {
 }
 
 .btn-cta-primary:hover {
+    background: #6366F1;
+    color: #FFFFFF;
     box-shadow: 0 6px 30px rgba(255, 255, 255, 0.7);
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.05);
 }
 
 .btn-cta-secondary {
@@ -700,8 +707,11 @@ body > *:not(#particle-canvas) {
 }
 
 .btn-cta-secondary:hover {
+    background: #FFFFFF;
+    color: #6366F1;
+    border-color: #FFFFFF;
     box-shadow: 0 6px 24px rgba(255, 255, 255, 0.5);
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.05);
 }
 
 /* Footer */
