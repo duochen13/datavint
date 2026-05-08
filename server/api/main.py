@@ -58,8 +58,29 @@ async def root():
 
 @app.get("/api/health")
 async def health():
-    """Health check endpoint"""
-    return {"status": "healthy"}
+    """Health check endpoint with debug info"""
+    import os
+    from pathlib import Path
+    import datavint
+
+    datavint_file = Path(datavint.__file__)
+    project_root = datavint_file.parent.parent
+    dataset_path = project_root / "raw_data/titanic/titanic.csv"
+
+    return {
+        "status": "healthy",
+        "debug": {
+            "cwd": os.getcwd(),
+            "datavint_location": str(datavint_file),
+            "project_root": str(project_root),
+            "dataset_path": str(dataset_path),
+            "dataset_exists": dataset_path.exists(),
+            "paths_checked": {
+                "/app/raw_data/titanic/titanic.csv": os.path.exists("/app/raw_data/titanic/titanic.csv"),
+                "/app/server/raw_data/titanic/titanic.csv": os.path.exists("/app/server/raw_data/titanic/titanic.csv"),
+            }
+        }
+    }
 
 
 @app.get("/api/debug/paths")
