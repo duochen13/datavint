@@ -62,6 +62,39 @@ async def health():
     return {"status": "healthy"}
 
 
+@app.get("/api/debug/paths")
+async def debug_paths():
+    """Debug endpoint to check filesystem paths"""
+    import os
+    import sys
+    from pathlib import Path
+    import datavint
+
+    datavint_file = Path(datavint.__file__)
+    project_root = datavint_file.parent.parent
+    dataset_path = project_root / "raw_data/titanic/titanic.csv"
+
+    return {
+        "cwd": os.getcwd(),
+        "datavint.__file__": str(datavint_file),
+        "project_root": str(project_root),
+        "dataset_path": str(dataset_path),
+        "dataset_exists": dataset_path.exists(),
+        "parent_dirs": {
+            "/app": os.path.exists("/app"),
+            "/app/raw_data": os.path.exists("/app/raw_data"),
+            "/app/raw_data/titanic": os.path.exists("/app/raw_data/titanic"),
+            "/app/raw_data/titanic/titanic.csv": os.path.exists("/app/raw_data/titanic/titanic.csv"),
+        },
+        "server_dirs": {
+            "/app/server": os.path.exists("/app/server"),
+            "/app/server/raw_data": os.path.exists("/app/server/raw_data"),
+            "/app/server/raw_data/titanic": os.path.exists("/app/server/raw_data/titanic"),
+            "/app/server/raw_data/titanic/titanic.csv": os.path.exists("/app/server/raw_data/titanic/titanic.csv"),
+        }
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8080, reload=True)
