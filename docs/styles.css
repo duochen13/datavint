@@ -146,7 +146,7 @@ body > *:not(#particle-canvas) {
 .hero-subline {
     font-size: 20px;
     color: #A1A1AA;
-    max-width: 900px;
+    max-width: 700px;
     line-height: 1.5;
 }
 
