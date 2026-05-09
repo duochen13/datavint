@@ -7,7 +7,7 @@ FastAPI entry point with CORS middleware and route registration.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import playground, data, visualization, simple_profiling, code_playground, chat
+from .routes import playground, data, visualization, simple_profiling, code_playground, chat, diagnostics
 
 # Create FastAPI app
 app = FastAPI(
@@ -44,6 +44,7 @@ app.include_router(visualization.router, prefix="/api/visualization", tags=["vis
 app.include_router(simple_profiling.router, prefix="/api/profiling", tags=["profiling"])
 app.include_router(code_playground.router, tags=["code-playground"])
 app.include_router(chat.router, tags=["chat"])
+app.include_router(diagnostics.router, tags=["diagnostics"])
 
 
 @app.get("/")
