@@ -162,6 +162,14 @@ Key routing rules:
 - Save progress → invoke /context-save
 - Resume context → invoke /context-restore
 
+**Data Quality Analysis Skills:**
+- Class imbalance / balanced dataset / class distribution → invoke /check-imbalance
+- Completeness / missing values / null values → invoke /check-completeness
+- High cardinality / unique values / ID columns → invoke /check-cardinality
+- Entropy / information content / constant features → invoke /check-entropy
+- Uniqueness / duplicate values / low uniqueness → invoke /check-uniqueness
+- Distinctness / distinct values / few distinct → invoke /check-distinctness
+
 ---
 
 # Product Design Document
