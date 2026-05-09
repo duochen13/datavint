@@ -401,39 +401,62 @@
     <!-- Demo Modal Script -->
     <script>
         function openDemoModal() {
-            document.getElementById('demoModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
+            const modal = document.getElementById('demoModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
         }
 
         function closeDemoModal() {
-            document.getElementById('demoModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-            document.getElementById('demoForm').reset();
+            const modal = document.getElementById('demoModal');
+            const form = document.getElementById('demoForm');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+            if (form) {
+                form.reset();
+            }
         }
 
         function handleDemoSubmit(event) {
             event.preventDefault();
-            const formData = {
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                email: document.getElementById('email').value
-            };
 
-            // TODO: Send to backend API
-            console.log('Demo request:', formData);
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
 
-            // Show success message
-            alert('Thank you! We\'ll contact you soon to schedule your demo.');
+            // Log the submission (TODO: Send to backend API)
+            console.log('Demo request submitted:', { firstName, lastName, email });
+
+            // Close modal immediately
             closeDemoModal();
+
+            // Show success message after modal is closed
+            setTimeout(function() {
+                alert('Thank you! We\'ll contact you soon to schedule your demo.');
+            }, 100);
         }
 
         // Close modal when clicking outside
-        window.onclick = function(event) {
+        document.addEventListener('DOMContentLoaded', function() {
             const modal = document.getElementById('demoModal');
-            if (event.target === modal) {
+            if (modal) {
+                modal.addEventListener('click', function(event) {
+                    if (event.target === modal) {
+                        closeDemoModal();
+                    }
+                });
+            }
+        });
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
                 closeDemoModal();
             }
-        }
+        });
     </script>
 </body>
 </html>
