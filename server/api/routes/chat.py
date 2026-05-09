@@ -201,9 +201,24 @@ async def analyze_csv(
                 result_data = local_scope['result']
             # Fallback: check for stats/issues from vint.profile()
             elif 'stats' in local_scope and 'issues' in local_scope:
+                stats = local_scope['stats']
+                issues = local_scope['issues']
+
+                # Convert Issue objects to dictionaries for JSON serialization
+                serialized_issues = []
+                if isinstance(issues, list):
+                    for issue in issues:
+                        if hasattr(issue, 'to_dict'):
+                            serialized_issues.append(issue.to_dict())
+                        else:
+                            serialized_issues.append(issue)
+
+                # Convert DatasetStatistics to dict if available
+                serialized_stats = stats.to_dict() if hasattr(stats, 'to_dict') else stats
+
                 result_data = {
-                    'stats': local_scope['stats'],
-                    'issues': local_scope['issues']
+                    'stats': serialized_stats,
+                    'issues': serialized_issues
                 }
             else:
                 # No explicit result variable found
@@ -223,8 +238,15 @@ async def analyze_csv(
             # Add issue count if available
             if isinstance(result_data, dict) and 'issues' in result_data:
                 issues = result_data['issues']
-                issue_count = len(issues) if isinstance(issues, list) else 0
-                output_message += f"\nData quality issues found: {issue_count}"
+                if isinstance(issues, list):
+                    issue_count = len(issues)
+                    output_message += f"\nData quality issues found: {issue_count}"
+
+                    # Add severity breakdown
+                    if issue_count > 0:
+                        high_count = sum(1 for i in issues if isinstance(i, dict) and i.get('severity') == 'HIGH')
+                        if high_count > 0:
+                            output_message += f"\n⚠ {high_count} HIGH severity issue(s) detected"
 
             return AnalysisResponse(
                 success=True,
