@@ -148,3 +148,46 @@ dv.config.null_rate_medium = 0.20  # 20% instead of 2%
 # Now run detection with custom thresholds
 stats, issues = dv.profile(df)
 ```
+
+## NumPy Boolean Subtract Error
+
+**Fixed**: 2026-05-09 (skill_executor.py)
+
+**Error Message**: `numpy boolean subtract, the '-' operator, is not supported, use the bitwise_xor, the '^' operator, or the logical_xor function instead.`
+
+**Root Cause**:
+- NumPy 2.0+ deprecated boolean subtraction (`bool_val - 1`)
+- Calculating missing rate as `1 - completeness` where `completeness` is a NumPy boolean
+- Error occurs when `feat_stats.completeness` is a NumPy boolean/array instead of float
+
+**Fix**:
+```python
+# ❌ BAD - Can trigger error with NumPy booleans
+missing_rate = 1 - feat_stats.completeness
+
+# ✅ GOOD - Convert to float first
+completeness_val = float(feat_stats.completeness)
+missing_rate = 1.0 - completeness_val
+```
+
+**Where to apply**:
+- Any arithmetic operations on values that might be NumPy booleans
+- Always convert to Python `float()` before math operations
+- Applied in: `skill_executor.py` completeness calculations
+
+## Hybrid Routing Implementation (2026-05-09)
+
+**Location**: `server/api/services/skill_router.py` + `skill_executor.py`
+
+**Key Decisions**:
+- Skills route at 70% confidence threshold (keyword matches)
+- Command matches (`/check-*`) get highest confidence (1.0)
+- LLM fallback always available if skill execution fails
+- Routing metadata included in API response for debugging
+
+**Monitoring**:
+- Use `/api/chat/metrics` to track skill vs LLM usage
+- Expect 70-90% skill routing for healthy performance
+- Cost savings should be 60-80% vs all-LLM approach
+
+**See**: `memory/hybrid-routing.md` for implementation details
