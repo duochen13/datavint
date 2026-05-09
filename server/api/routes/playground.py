@@ -33,8 +33,8 @@ async def execute_code(request: ExecuteCodeRequest):
 
     try:
         # Import datavint into the execution namespace
-        # Note: Import from server.core instead of datavint
-        exec("from server.core import *", local_namespace)
+        import datavint as dv
+        local_namespace['dv'] = dv
 
         # Execute user code
         exec(request.code, local_namespace)

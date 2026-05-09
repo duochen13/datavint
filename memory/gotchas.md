@@ -62,3 +62,21 @@
 - Total: ~1,000,000,000× slower
 
 **Key Insight:** Demo is intentionally tiny for fast iteration. Real ML at scale requires distributed training (Spark, Ray, etc.)
+
+## Architecture - Single Source of Truth
+
+### Detector Implementation
+- **ONLY** `/datavint/detectors/` - 11 detectors (v0.1 + v0.2 enriched)
+- **NEVER** import from `server.core` - removed in 2026-05-08
+
+### API Flow
+```
+User chatbox → /server/api/routes/chat.py
+            → import datavint as vint
+            → vint.profile(df)
+            → /datavint/statistics.py (computes stats)
+            → /datavint/detectors/* (runs all detectors)
+            → returns (stats, issues)
+```
+
+All routes import `datavint` as a library dependency. No duplicate implementations.
