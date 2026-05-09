@@ -5,8 +5,8 @@ Visualization Board tab API routes
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 
-from ..models.response import IssuesResponse, ManifestResponse, IssueItem
-from ..services.analysis import dataset_cache
+from server.api.models.response import IssuesResponse, ManifestResponse, IssueItem
+from server.api.services.analysis import dataset_cache
 
 router = APIRouter()
 

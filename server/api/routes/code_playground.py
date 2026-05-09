@@ -16,7 +16,7 @@ import logging
 import datavint as vint
 
 # Import shared rate limiter
-from ..utils.rate_limit import rate_limiter
+from server.api.utils.rate_limit import rate_limiter
 
 logger = logging.getLogger(__name__)
 

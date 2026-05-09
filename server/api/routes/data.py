@@ -9,8 +9,8 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Query
 from typing import Optional
 import json
 
-from ..models.response import DataPreviewResponse, StatisticsResponse
-from ..services.analysis import dataset_cache
+from server.api.models.response import DataPreviewResponse, StatisticsResponse
+from server.api.services.analysis import dataset_cache
 
 router = APIRouter()
 

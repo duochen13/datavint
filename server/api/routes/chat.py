@@ -19,9 +19,9 @@ import logging
 import datavint as vint
 
 # Import shared utilities
-from ..utils.rate_limit import rate_limiter
-from ..utils.code_validator import validate_generated_code
-from ..services.llm_client import generate_datavint_code
+from server.api.utils.rate_limit import rate_limiter
+from server.api.utils.code_validator import validate_generated_code
+from server.api.services.llm_client import generate_datavint_code
 
 logger = logging.getLogger(__name__)
 
