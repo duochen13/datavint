@@ -103,3 +103,48 @@ All routes import `datavint` as a library dependency. No duplicate implementatio
 **Prevention**:
 - Always use `vint.profile(df, return_dict=True)` in API endpoints
 - Or manually serialize Issue objects before JSON response
+
+## Import Best Practices
+
+### Use Absolute Imports in Routes Directory
+
+**Fixed**: 2026-05-08 (commit 7667bde)
+
+**Problem**:
+- Relative imports (`from ..services.llm_client`) break when file structure changes
+- Hard to understand where modules come from
+- Refactoring-unfriendly
+
+**Solution**:
+- Use absolute imports: `from server.api.services.llm_client`
+- Applied to all files in `server/api/routes/` directory
+
+**Benefits**:
+- More explicit and easier to understand
+- No dependency on file location - safer refactoring
+- Consistent import style across all route modules
+
+## Missing Value Detection Thresholds
+
+**Configuration**: `datavint/config.py`
+
+**Default Thresholds**:
+- `null_rate_high = 0.05` (5% missing → HIGH severity)
+- `null_rate_medium = 0.02` (2% missing → MEDIUM severity)
+
+**Important**: The threshold is **5%, not 50%**. This means:
+- Any column with >5% missing values triggers HIGH severity
+- Columns with 2-5% missing values trigger MEDIUM severity
+- Very strict thresholds for production ML pipelines
+
+**Override Example**:
+```python
+import datavint as dv
+
+# Use more lenient thresholds
+dv.config.null_rate_high = 0.50  # 50% instead of 5%
+dv.config.null_rate_medium = 0.20  # 20% instead of 2%
+
+# Now run detection with custom thresholds
+stats, issues = dv.profile(df)
+```
