@@ -51,15 +51,57 @@
         </div>
     </section>
 
-    <!-- Trust Bar -->
-    <section class="trust-bar">
-        <p class="trust-label">TRUSTED BY DATA SCIENCE TEAMS</p>
-        <div class="trust-logos">
-            <div class="trust-logo">KAGGLE</div>
-            <div class="trust-logo">UCI ML</div>
-            <div class="trust-logo">OpenML</div>
-            <div class="trust-logo">MovieLens</div>
-            <div class="trust-logo">Amazon</div>
+    <!-- AI Scaling Trends Graph -->
+    <section class="scaling-graph-section">
+        <h3 class="graph-title">The Data Quality Bottleneck</h3>
+        <p class="graph-subtitle">While compute, models, and parameters scale exponentially, data quality lags behind</p>
+        <div class="graph-container">
+            <svg viewBox="0 0 800 400" class="scaling-graph">
+                <!-- Grid lines -->
+                <line x1="80" y1="50" x2="80" y2="350" stroke="#27272A" stroke-width="2"/>
+                <line x1="80" y1="350" x2="750" y2="350" stroke="#27272A" stroke-width="2"/>
+
+                <!-- Y-axis gridlines -->
+                <line x1="75" y1="300" x2="750" y2="300" stroke="#27272A" stroke-width="1" opacity="0.3"/>
+                <line x1="75" y1="250" x2="750" y2="250" stroke="#27272A" stroke-width="1" opacity="0.3"/>
+                <line x1="75" y1="200" x2="750" y2="200" stroke="#27272A" stroke-width="1" opacity="0.3"/>
+                <line x1="75" y1="150" x2="750" y2="150" stroke="#27272A" stroke-width="1" opacity="0.3"/>
+                <line x1="75" y1="100" x2="750" y2="100" stroke="#27272A" stroke-width="1" opacity="0.3"/>
+
+                <!-- X-axis labels (years) -->
+                <text x="130" y="370" fill="#71717A" font-size="12" text-anchor="middle">2015</text>
+                <text x="280" y="370" fill="#71717A" font-size="12" text-anchor="middle">2018</text>
+                <text x="430" y="370" fill="#71717A" font-size="12" text-anchor="middle">2021</text>
+                <text x="580" y="370" fill="#71717A" font-size="12" text-anchor="middle">2024</text>
+                <text x="730" y="370" fill="#71717A" font-size="12" text-anchor="middle">2026</text>
+
+                <!-- Y-axis label -->
+                <text x="40" y="200" fill="#A1A1AA" font-size="14" text-anchor="middle" transform="rotate(-90, 40, 200)">Growth / Scale</text>
+
+                <!-- Exponential curves -->
+                <!-- Compute Power (steep exponential) -->
+                <path d="M 80,340 Q 200,300 350,180 T 750,50"
+                      stroke="#00F0FF" stroke-width="3" fill="none" opacity="0.9"/>
+                <text x="680" y="45" fill="#00F0FF" font-size="13" font-weight="600">Compute Power</text>
+
+                <!-- Model Capability (exponential) -->
+                <path d="M 80,345 Q 200,310 350,200 T 750,70"
+                      stroke="#A4FF00" stroke-width="3" fill="none" opacity="0.9"/>
+                <text x="680" y="65" fill="#A4FF00" font-size="13" font-weight="600">Model Capability</text>
+
+                <!-- Model Parameters (exponential) -->
+                <path d="M 80,345 Q 200,315 350,220 T 750,90"
+                      stroke="#8B7FD6" stroke-width="3" fill="none" opacity="0.9"/>
+                <text x="680" y="85" fill="#8B7FD6" font-size="13" font-weight="600">Model Parameters</text>
+
+                <!-- Data Quality (slow linear growth - THE BOTTLENECK) -->
+                <path d="M 80,345 L 750,240"
+                      stroke="#FF5252" stroke-width="4" fill="none" opacity="1" stroke-dasharray="8,4"/>
+                <text x="680" y="235" fill="#FF5252" font-size="13" font-weight="700">Data Quality</text>
+
+                <!-- Annotation for the gap -->
+                <text x="400" y="160" fill="#FF5252" font-size="16" font-weight="700" text-anchor="middle">← The Bottleneck</text>
+            </svg>
         </div>
     </section>
 
