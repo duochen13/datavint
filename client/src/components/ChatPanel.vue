@@ -1,68 +1,25 @@
 <script setup>
-import { ref, nextTick, onMounted, watch } from 'vue'
+import { ref, nextTick, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { uploadAndAnalyzeCSV } from '../services/codePlaygroundApi'
+import { useDatasetStore } from '../stores/datasetStore'
 
+const router = useRouter()
+const store = useDatasetStore()
 const emit = defineEmits(['send-message'])
 
-const messages = ref([])
+// Use store instead of local state
+const messages = computed(() => store.chatHistory)
+const uploadedFile = computed(() => store.uploadedFile)
+const isAnalyzing = computed(() => store.isAnalyzing)
+
 const input = ref('')
 const chatMessages = ref(null)
 const textarea = ref(null)
 const fileInput = ref(null)
-const uploadedFile = ref(null)
-const isAnalyzing = ref(false)
-
-// Local storage key for chat history
-const CHAT_HISTORY_KEY = 'datavint_chat_history'
-
-// Load chat history on mount
-onMounted(() => {
-  loadChatHistory()
-})
-
-// Watch messages and save to localStorage whenever they change
-watch(messages, () => {
-  saveChatHistory()
-}, { deep: true })
-
-function loadChatHistory() {
-  try {
-    const saved = localStorage.getItem(CHAT_HISTORY_KEY)
-    if (saved) {
-      const parsed = JSON.parse(saved)
-      messages.value = parsed
-
-      // Scroll to bottom after loading
-      nextTick(() => {
-        if (chatMessages.value) {
-          chatMessages.value.scrollTop = chatMessages.value.scrollHeight
-        }
-      })
-    }
-  } catch (error) {
-    console.error('Failed to load chat history:', error)
-  }
-}
-
-function saveChatHistory() {
-  try {
-    localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(messages.value))
-  } catch (error) {
-    console.error('Failed to save chat history:', error)
-  }
-}
-
-function clearChatHistory() {
-  messages.value = []
-  localStorage.removeItem(CHAT_HISTORY_KEY)
-}
 
 function addMessage(content, type = 'user') {
-  messages.value.push({
-    content,
-    type,
-    id: Date.now()
-  })
+  store.addMessage(content, type)
 
   nextTick(() => {
     if (chatMessages.value) {
@@ -71,11 +28,15 @@ function addMessage(content, type = 'user') {
   })
 }
 
+function clearChatHistory() {
+  store.clearHistory()
+}
+
 function handleFileUpload(event) {
   const file = event.target.files[0]
   if (!file) return
 
-  uploadedFile.value = file
+  store.uploadedFile = file
   addMessage(`📎 Uploaded: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`, 'assistant')
   addMessage('What would you like to analyze? (e.g., "check for missing values", "find duplicates")', 'assistant')
 }
@@ -94,39 +55,48 @@ async function sendMessage() {
 
   // If file is uploaded, analyze it
   if (uploadedFile.value) {
-    isAnalyzing.value = true
+    store.isAnalyzing = true
     addMessage('🔄 Analyzing your dataset...', 'assistant')
 
     try {
       const result = await uploadAndAnalyzeCSV(uploadedFile.value, message)
 
       if (result.success) {
-        // Show output message
-        addMessage(result.output, 'assistant')
+        // Save to store (including full analysis output)
+        store.setDataset({
+          id: `dataset_${Date.now()}`,
+          filename: uploadedFile.value.name,
+          stats: result.data?.stats,
+          issues: result.data?.issues || [],
+          preview: result.data?.preview,
+          description: result.data?.description || null,
+          analysisOutput: result.output // Store full analysis output for DataView
+        })
 
-        // Show generated code
-        if (result.generated_code) {
-          addMessage('Generated code:\n```python\n' + result.generated_code + '\n```', 'assistant')
+        // Show simple success message (not the detailed output)
+        const issueCount = result.data?.issues?.length || 0
+        const highCount = result.data?.issues?.filter(i => i.severity === 'HIGH').length || 0
+
+        let message = `✅ Analysis complete - ${issueCount} issue(s) detected`
+        if (highCount > 0) {
+          message += ` (${highCount} high severity)`
         }
+        addMessage(message, 'assistant')
 
-        // Show additional results if available
-        if (result.data && result.data.issues) {
-          const issueCount = Array.isArray(result.data.issues) ? result.data.issues.length : 0
-          if (issueCount > 0) {
-            addMessage(`📊 Found ${issueCount} data quality issues. View details in the results panel.`, 'assistant')
-          }
+        // Navigation CTA (hybrid logic)
+        const shouldNavigate = shouldSuggestDataView(result.data?.issues)
+        if (shouldNavigate) {
+          addMessage('📊 View detailed profiling in Raw Data tab', 'assistant')
         }
       } else {
-        // Show error
         addMessage('❌ Analysis failed: ' + (result.error || 'Unknown error'), 'assistant')
       }
     } catch (error) {
       console.error('Analysis error:', error)
       addMessage('❌ Failed to analyze: ' + error.message, 'assistant')
     } finally {
-      isAnalyzing.value = false
-      uploadedFile.value = null
-      // Reset file input
+      store.isAnalyzing = false
+      store.uploadedFile = null
       if (fileInput.value) {
         fileInput.value.value = ''
       }
@@ -135,6 +105,28 @@ async function sendMessage() {
     // Normal chat message (no file uploaded)
     emit('send-message', message)
   }
+}
+
+/**
+ * Hybrid navigation logic:
+ * - Auto-suggest if issues detected
+ * - Auto-suggest for specific queries like "missing values", "duplicates", "quality"
+ */
+function shouldSuggestDataView(issues) {
+  if (!issues || issues.length === 0) return false
+
+  // If HIGH severity issues, definitely suggest
+  const highSeverity = issues.filter(i => i.severity === 'HIGH')
+  if (highSeverity.length > 0) return true
+
+  // If more than 3 issues total, suggest
+  if (issues.length >= 3) return true
+
+  return false
+}
+
+function navigateToDataView() {
+  router.push('/data')
 }
 
 function handleKeypress(e) {
@@ -188,7 +180,18 @@ function handleInput() {
 
       <div v-for="msg in messages" :key="msg.id" :class="['message', msg.type]">
         <div class="message-label">{{ msg.type === 'user' ? 'You' : 'DataVint' }}</div>
-        <div class="message-content">{{ msg.content }}</div>
+        <div class="message-content">
+          {{ msg.content }}
+
+          <!-- Navigation CTA button -->
+          <button
+            v-if="msg.content.includes('View detailed profiling in Raw Data tab')"
+            class="nav-cta-button"
+            @click="navigateToDataView"
+          >
+            Go to Raw Data →
+          </button>
+        </div>
       </div>
     </div>
 
@@ -265,14 +268,7 @@ function handleInput() {
 }
 
 .status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  display: none; /* Hidden when ChatPanel is in App.vue - hamburger toggle replaces it */
 }
 
 .clear-history-btn {
@@ -527,5 +523,25 @@ function handleInput() {
 
 .send-button:active {
   transform: translateY(0);
+}
+
+/* Navigation CTA Button */
+.nav-cta-button {
+  margin-top: 12px;
+  padding: 10px 20px;
+  background: var(--accent-cyan);
+  border: none;
+  border-radius: 6px;
+  color: var(--bg-dark);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.nav-cta-button:hover {
+  background: var(--accent-lime);
+  transform: translateY(-1px);
 }
 </style>

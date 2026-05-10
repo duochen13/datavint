@@ -22,6 +22,7 @@ import datavint as vint
 from server.api.utils.rate_limit import rate_limiter
 from server.api.utils.code_validator import validate_generated_code
 from server.api.services.llm_client import generate_datavint_code
+from server.api.services.description_generator import generate_dataset_description
 
 # Import hybrid routing components
 from server.api.services.skill_router import get_router
@@ -293,6 +294,26 @@ async def analyze_csv(
                         high_count = sum(1 for i in issues if isinstance(i, dict) and i.get('severity') == 'HIGH')
                         if high_count > 0:
                             output_message += f"\n⚠ {high_count} HIGH severity issue(s) detected"
+
+            # Generate dataset description (async)
+            dataset_description = await generate_dataset_description(
+                stats=result_data.get('stats', {}),
+                issues=result_data.get('issues', []),
+                columns=df.columns.tolist()
+            )
+
+            # Add description to result data
+            if dataset_description:
+                result_data['description'] = dataset_description
+
+            # Add preview data for DataView (100 rows)
+            if 'preview' not in result_data:
+                preview_rows = min(100, len(df))
+                result_data['preview'] = {
+                    'sample': df.head(preview_rows).to_dict('records'),
+                    'rows': len(df),
+                    'columns': len(df.columns)
+                }
 
             return AnalysisResponse(
                 success=True,

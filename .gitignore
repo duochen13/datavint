@@ -50,3 +50,4 @@ dmypy.json
 .vercel
 .env*.local
 dist/
+.gstack/
