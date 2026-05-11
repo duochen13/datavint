@@ -44,3 +44,75 @@
 - Multi-column metrics (MutualInformation, Correlation)
 - Probabilistic algorithms (ApproxCountDistinct, ApproxQuantiles)
 - Constraint-based metrics (Compliance, PatternMatch)
+
+## Experiment Versioning Architecture (2026-05-11)
+
+**Decision Date**: 2026-05-11
+
+**Context**: Need to track ML experiment lineage including data versions and model runs for recommendation systems.
+
+**Decision**: Implemented experiment tracking with content-based data versioning:
+
+**Components**:
+1. **SDK**: `datavint.experiment()` context manager with SQLite storage
+2. **Backend**: FastAPI routes at `/api/experiments/:id/lineage`
+3. **Frontend**: Bipartite graph dashboard (Vue 3 + SVG)
+
+**Key Architectural Choices**:
+
+### 1. Content-Based Data Versioning
+- **Decision**: SHA256 hash of DataFrame content (sorted columns)
+- **Rationale**:
+  - Automatic deduplication (same data → same ID)
+  - Detects data changes automatically
+  - No manual version management needed
+- **Implementation**: First 7 chars of SHA256 (git-style short hash)
+
+### 2. SQLite Metadata Store
+- **Decision**: Local SQLite database at `~/.datavint/metadata.db`
+- **Rationale**:
+  - Zero-config persistence
+  - Easy to query with SQL
+  - Portable across environments
+  - No server dependencies
+- **Schema**:
+  - `data_commits`: id, experiment_id, hash, message, row_count, timestamp
+  - `model_runs`: id, experiment_id, data_commit_id, metrics, params, best, sweep_id
+
+### 3. Bipartite Graph Visualization
+- **Decision**: Two-column layout with SVG Bezier curves
+- **Rationale**:
+  - Clear data → model lineage flow
+  - Sweep clustering shows hyperparameter groups
+  - Hover interactions reveal connections
+- **Colors**:
+  - Default lines: Light green (--accent-light-green)
+  - Active: Purple (--accent-purple)
+  - Best model: Bright green (--accent-green)
+
+### 4. Winner Selection Logic
+- **Decision**: Lowest NE (Normalized Entropy) = best performance
+- **Rationale**: User's recommendation system domain uses this metric
+- **Implementation**:
+  - Overall best: Lowest NE across all runs
+  - Sweep winner: Lowest NE within that sweep
+
+### 5. Mock Data Strategy
+- **Decision**: Frontend works with mock data, falls back gracefully
+- **Rationale**:
+  - Frontend development unblocked by backend delays
+  - Easy to develop/test UI in isolation
+  - Seamless transition when backend ready
+- **Implementation**: try/catch with loadMockData() fallback
+
+**Integration Points**:
+- SDK: `datavint.experiment()` context manager
+- API: `GET /api/experiments/:id/lineage`
+- Dashboard: http://localhost:5173/experiments/:id
+- Demo: `python3 examples/experiment_tracking_demo.py`
+
+**Deferred to Future**:
+- MLflow integration (read local mlflow.db)
+- Real-time monitoring dashboard
+- Automatic model comparison reports
+- Slack/PagerDuty alerts for quality regressions

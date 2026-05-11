@@ -212,3 +212,100 @@ missing_rate = 1.0 - completeness_val
 - Cost savings should be 60-80% vs all-LLM approach
 
 **See**: `memory/hybrid-routing.md` for implementation details
+
+## Experiment Tracking Gotchas (2026-05-11)
+
+### 1. Pandas to_json() Doesn't Accept sort_keys Parameter
+
+**Error**: `TypeError: to_json() got an unexpected keyword argument 'sort_keys'`
+
+**Problem**:
+```python
+# ❌ BAD - sort_keys is not a valid parameter
+df.to_json(orient='split', sort_keys=True)
+```
+
+**Fix**:
+```python
+# ✅ GOOD - Sort columns first, then convert to JSON
+df_sorted = df[sorted(df.columns)]
+json_str = df_sorted.to_json(orient='split')
+```
+
+**Where**: `datavint/experiment.py:147` (_compute_dataframe_hash method)
+
+### 2. Vue Error State Blocks Graph Rendering
+
+**Problem**: When API fetch fails, setting `error.value = err.message` causes the error state to persist even after loading mock data. The `v-else-if="error"` template blocks the `v-else` that renders the graph.
+
+**Fix**:
+```javascript
+// ❌ BAD - Error blocks graph rendering
+} catch (err) {
+  console.error('Failed to fetch experiment lineage:', err)
+  error.value = err.message  // This blocks rendering!
+  loadMockData()
+}
+
+// ✅ GOOD - Clear error after mock data loads
+} catch (err) {
+  console.error('Failed to fetch experiment lineage:', err)
+  loadMockData()
+  error.value = null  // Clear so v-else renders graph
+}
+```
+
+**Where**: `client/src/views/ExperimentView.vue:39`
+
+### 3. Vite Base Path for Experiments
+
+**Problem**: Setting `base: '/playground/'` in vite.config.js breaks experiment view routing.
+
+**Fix**:
+```javascript
+// ❌ BAD - Wrong base path
+export default defineConfig({
+  base: '/playground/',  // Breaks /experiments route
+  // ...
+})
+
+// ✅ GOOD - Root base path
+export default defineConfig({
+  base: '/',  // Supports all routes
+  // ...
+})
+```
+
+**Where**: `client/vite.config.js:8`
+
+### 4. Vue Router Catch-All for Old URLs
+
+**Problem**: Accessing old URLs like `/playground/` results in "No match found" warnings.
+
+**Fix**: Add catch-all route that redirects to new structure:
+```javascript
+{
+  path: '/:pathMatch(.*)*',
+  redirect: '/experiments',
+}
+```
+
+**Where**: `client/src/router/index.js:32`
+
+### 5. Winner Logic: Metric Directionality Matters
+
+**Context**: Different metrics optimize in different directions.
+
+**Examples**:
+- **Lower is better**: NE (Normalized Entropy), loss, error rate
+- **Higher is better**: accuracy, AUC, precision, recall
+
+**Implementation**: User's recommendation system uses NE where **lowest = best**. Document this clearly in code comments:
+```javascript
+// Winner Selection Logic:
+//   - Lower NE (Normalized Entropy) = better model performance
+//   - Overall best: Lowest NE across all runs
+//   - Sweep winner: Lowest NE within that sweep
+```
+
+**Where**: `client/src/views/ExperimentView.vue:46`
