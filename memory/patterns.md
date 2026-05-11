@@ -166,3 +166,55 @@ async function fetchExperimentLineage() {
 - Frontend fully functional before backend exists
 - Easy transition: implement API endpoint → frontend switches automatically
 - Don't block graph rendering on API errors during development
+
+## Automated E2E Testing Hook Pattern (2026-05-11)
+
+**Pattern:** Automated testing hook that runs e2e tests whenever client code changes to ensure /playground page functionality.
+
+**Implementation:**
+```bash
+# .claude/hooks/client-change-hook.sh
+# Detects uncommitted or staged changes in client/
+git diff --name-only client/
+git diff --cached --name-only client/
+
+# Runs e2e test suite if changes detected
+python3 tests/e2e/test_playground_page.py
+```
+
+**Hook Integration:**
+- Called from user-prompt-submit-hook.sh on every user interaction
+- Provides clear visual feedback with formatted output
+- Non-blocking: warns but doesn't prevent work if tests fail
+
+**E2E Test Coverage:**
+```python
+# tests/e2e/test_playground_page.py
+1. test_backend_api_running()      # Backend server health
+2. test_frontend_running()         # Frontend dev server at /playground/
+3. test_experiment_lineage_api()   # API data structure validation
+4. test_experiments_list_api()     # Experiments list endpoint
+5. Winner logic validation         # Ensures lowest NE = best
+```
+
+**When Triggered:**
+- Any change to files in client/ directory (uncommitted or staged)
+- Lists all modified files before running tests
+- Reports pass/fail status with color-coded output
+
+**Test Philosophy:**
+- Test-driven development mindset for frontend changes
+- Catch breaking changes before commit
+- Validate API contract (backend ↔ frontend)
+- Ensure critical user flows work (experiment lineage visualization)
+
+**Example Output:**
+```
+🧪 CLIENT CODE CHANGES DETECTED - RUNNING E2E TESTS
+Modified files in client/:
+  - client/src/router/index.js
+✓ Backend API is running
+✓ Frontend is running at /playground/
+✓ Winner logic correct: lowest NE (0.685) = best
+✅ E2E TESTS PASSED - /playground page working correctly
+```
