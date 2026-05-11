@@ -491,8 +491,8 @@
         }
 
         .model-node.sweep-winner {
-            border-color: #F59E0B;
-            background: #1F1A0F;
+            border-color: #86EFAC;
+            background: #0F1F19;
         }
 
         .best-badge {
@@ -511,7 +511,7 @@
             position: absolute;
             top: -10px;
             right: 12px;
-            background: #F59E0B;
+            background: #86EFAC;
             color: white;
             font-size: 11px;
             font-weight: 600;
@@ -563,7 +563,7 @@
         }
 
         .connection-line {
-            stroke: #2A2D35;
+            stroke: #86EFAC;
             stroke-width: 2;
             fill: none;
             opacity: 0.6;
@@ -690,8 +690,8 @@
                     <div class="message-bubble">
                         <strong>D1</strong> (fix user feature coverage) produced the best results. Models trained on D1 achieved:
                         <br><br>
-                        • <strong>M2.2:</strong> 0.867 NE (+1.3% vs best D0 model)<br>
-                        • <strong>M2.1:</strong> 0.841 NE<br>
+                        • <strong>M2.2:</strong> 0.701 NE (+1.3% vs best D0 model)<br>
+                        • <strong>M2.1:</strong> 0.723 NE<br>
                         <br>
                         The improved feature coverage in D1 was the key factor.
                     </div>
@@ -709,7 +709,7 @@
                     <div class="message-bubble">
                         <strong>M2</strong> (lr=0.005) had the best balance:
                         <br><br>
-                        • NE: 0.856 (highest in sweep)<br>
+                        • NE: 0.712 (highest in sweep)<br>
                         • Learning rate wasn't too aggressive (M1, M0 overfit)<br>
                         • Learning rate wasn't too conservative (M3 underfit)<br>
                         <br>
@@ -819,15 +819,15 @@
                                     Sweep 2: Sample Rate (from D1, lr=0.005)
                                 </div>
                                 <div class="sweep-models">
-                                    <!-- M2.2 (Overall Best) -->
+                                    <!-- M2.2 (Sweep 2 Winner) -->
                                     <article
-                                        class="model-node best"
+                                        class="model-node sweep-winner"
                                         data-id="M2.2"
                                         tabindex="0"
                                         role="button"
-                                        aria-label="Model run M2.2: Overall best model, sample rate 0.6, NE 0.867 excellent, CTR 0.0058 excellent, learning rate 0.005, coverage 94% excellent, created 1 hour ago"
+                                        aria-label="Model run M2.2: Sweep 2 winner, sample rate 0.6, NE 0.701 excellent, CTR 0.0058 excellent, learning rate 0.005, coverage 94% excellent, created 1 hour ago"
                                     >
-                                        <span class="best-badge">BEST</span>
+                                        <span class="sweep-winner-badge">Sweep 2 Winner</span>
                                         <div class="node-header">
                                             <span class="node-id">M2.2</span>
                                             <span class="node-timestamp">1h ago</span>
@@ -837,7 +837,7 @@
                                             <div class="metric">
                                                 <div class="metric-label">NE</div>
                                                 <div class="metric-value good">
-                                                    0.867
+                                                    0.701
                                                     <span class="sr-only">(excellent)</span>
                                                 </div>
                                             </div>
@@ -868,7 +868,7 @@
                                         data-id="M2.1"
                                         tabindex="0"
                                         role="button"
-                                        aria-label="Model run M2.1: sample rate 0.4, NE 0.841 good, CTR 0.0051 good, learning rate 0.005, coverage 89% good, created 2 hours ago"
+                                        aria-label="Model run M2.1: sample rate 0.4, NE 0.723 good, CTR 0.0051 good, learning rate 0.005, coverage 89% good, created 2 hours ago"
                                     >
                                         <div class="node-header">
                                             <span class="node-id">M2.1</span>
@@ -879,7 +879,7 @@
                                             <div class="metric">
                                                 <div class="metric-label">NE</div>
                                                 <div class="metric-value ok">
-                                                    0.841
+                                                    0.723
                                                     <span class="sr-only">(good)</span>
                                                 </div>
                                             </div>
@@ -913,15 +913,14 @@
                                     Sweep 1: Learning Rate (from D0)
                                 </div>
                                 <div class="sweep-models">
-                                    <!-- M2 (Sweep 1 Winner) -->
+                                    <!-- M2 (Regular run, selected for next sweep) -->
                                     <article
-                                        class="model-node sweep-winner"
+                                        class="model-node"
                                         data-id="M2"
                                         tabindex="0"
                                         role="button"
-                                        aria-label="Model run M2: Sweep 1 winner, learning rate 0.005 selected for Sweep 2, NE 0.856 excellent, CTR 0.0053 excellent, created 5 hours ago"
+                                        aria-label="Model run M2: learning rate 0.005 selected for Sweep 2, NE 0.712 good, CTR 0.0053 good, created 5 hours ago"
                                     >
-                                        <span class="sweep-winner-badge">Sweep 1 Winner</span>
                                         <div class="node-header">
                                             <span class="node-id">M2</span>
                                             <span class="node-timestamp">5h ago</span>
@@ -931,7 +930,7 @@
                                             <div class="metric">
                                                 <div class="metric-label">NE</div>
                                                 <div class="metric-value good">
-                                                    0.856
+                                                    0.712
                                                     <span class="sr-only">(excellent)</span>
                                                 </div>
                                             </div>
@@ -951,7 +950,7 @@
                                         data-id="M3"
                                         tabindex="0"
                                         role="button"
-                                        aria-label="Model run M3: learning rate 0.010, NE 0.823 good, CTR 0.0047, created 5 hours ago"
+                                        aria-label="Model run M3: learning rate 0.010, NE 0.734 bad, CTR 0.0047, created 5 hours ago"
                                     >
                                         <div class="node-header">
                                             <span class="node-id">M3</span>
@@ -961,9 +960,9 @@
                                         <div class="metrics">
                                             <div class="metric">
                                                 <div class="metric-label">NE</div>
-                                                <div class="metric-value ok">
-                                                    0.823
-                                                    <span class="sr-only">(good)</span>
+                                                <div class="metric-value bad">
+                                                    0.734
+                                                    <span class="sr-only">(bad)</span>
                                                 </div>
                                             </div>
                                             <div class="metric">
@@ -973,14 +972,15 @@
                                         </div>
                                     </article>
 
-                                    <!-- M1 -->
+                                    <!-- M1 (Sweep 1 Winner) -->
                                     <article
-                                        class="model-node"
+                                        class="model-node sweep-winner"
                                         data-id="M1"
                                         tabindex="0"
                                         role="button"
-                                        aria-label="Model run M1: learning rate 0.020, NE 0.801 poor, CTR 0.0042, created 6 hours ago"
+                                        aria-label="Model run M1: Sweep 1 winner, learning rate 0.020, NE 0.698 excellent, CTR 0.0042, created 6 hours ago"
                                     >
+                                        <span class="sweep-winner-badge">Sweep 1 Winner</span>
                                         <div class="node-header">
                                             <span class="node-id">M1</span>
                                             <span class="node-timestamp">6h ago</span>
@@ -989,9 +989,9 @@
                                         <div class="metrics">
                                             <div class="metric">
                                                 <div class="metric-label">NE</div>
-                                                <div class="metric-value bad">
-                                                    0.801
-                                                    <span class="sr-only">(poor)</span>
+                                                <div class="metric-value ok">
+                                                    0.698
+                                                    <span class="sr-only">(good)</span>
                                                 </div>
                                             </div>
                                             <div class="metric">
@@ -1001,14 +1001,15 @@
                                         </div>
                                     </article>
 
-                                    <!-- M0 -->
+                                    <!-- M0 (Overall Best) -->
                                     <article
-                                        class="model-node"
+                                        class="model-node best"
                                         data-id="M0"
                                         tabindex="0"
                                         role="button"
-                                        aria-label="Model run M0: learning rate 0.030, NE 0.788 poor, CTR 0.0039, created 6 hours ago"
+                                        aria-label="Model run M0: Overall best model, learning rate 0.030, NE 0.685 excellent, CTR 0.0039, created 6 hours ago"
                                     >
+                                        <span class="best-badge">BEST</span>
                                         <div class="node-header">
                                             <span class="node-id">M0</span>
                                             <span class="node-timestamp">6h ago</span>
@@ -1017,9 +1018,9 @@
                                         <div class="metrics">
                                             <div class="metric">
                                                 <div class="metric-label">NE</div>
-                                                <div class="metric-value bad">
-                                                    0.788
-                                                    <span class="sr-only">(poor)</span>
+                                                <div class="metric-value good">
+                                                    0.685
+                                                    <span class="sr-only">(excellent)</span>
                                                 </div>
                                             </div>
                                             <div class="metric">
@@ -1038,8 +1039,8 @@
                 <aside class="comparison-panel" role="complementary" aria-label="Experiment flow summary">
                     <div class="comparison-title">🎯 Experiment Flow</div>
                     <div class="comparison-insight">
-                        <strong>Sweep 1:</strong> Tried 4 learning rates on D0 (deduped data). M2 (lr=0.005) achieved best NE (0.856).<br><br>
-                        <strong>Sweep 2:</strong> Fixed lr=0.005, moved to D1 (better feature coverage), swept sample_rate. M2.2 (sample_rate=0.6) achieved <strong>0.867 NE</strong> — a <strong>+1.3% improvement</strong> from combining optimal hyperparameters with better data quality.
+                        <strong>Sweep 1:</strong> Tried 4 learning rates on D0 (deduped data). M2 (lr=0.005) achieved best NE (0.712).<br><br>
+                        <strong>Sweep 2:</strong> Fixed lr=0.005, moved to D1 (better feature coverage), swept sample_rate. M2.2 (sample_rate=0.6) achieved <strong>0.701 NE</strong> — a <strong>+1.3% improvement</strong> from combining optimal hyperparameters with better data quality.
                     </div>
                 </aside>
             </div>
