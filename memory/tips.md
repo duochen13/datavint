@@ -1,5 +1,34 @@
 # Useful Commands & Tips
 
+
+## [2026-05-11] Use ./.claude/scripts/update-memory.sh to quickly add dated entries to memory files
+
+**Quick add entries with automatic date formatting:**
+
+```bash
+# Add a pattern
+./.claude/scripts/update-memory.sh patterns "New pattern description"
+
+# Add a decision
+./.claude/scripts/update-memory.sh decisions "Why we chose X"
+
+# Add a gotcha
+./.claude/scripts/update-memory.sh gotchas "Watch out for Y"
+
+# Add a tip
+./.claude/scripts/update-memory.sh tips "Useful command or shortcut"
+```
+
+**What it does:**
+- Adds `[2026-05-11]` date prefix automatically
+- Inserts entry at top of file (after title)
+- Offers to open file in editor for expansion
+- Ensures proper formatting for memory continuity
+
+**Pre-push enforcement:**
+Git pre-push hook checks if memory files were updated before pushing to main.
+If not, it prompts you to update them or abort the push.
+
 ## Session Management
 
 - Save progress: `/context-save [optional-title]`
