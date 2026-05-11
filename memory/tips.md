@@ -77,7 +77,7 @@ curl -s http://localhost:8000/api/experiments/test_learning_rate_experiment/line
 
 ### View Dashboard
 ```
-Frontend: http://localhost:5173/experiments
+Frontend: http://localhost:5173/playground
 Backend API: http://localhost:8000/api/docs
 ```
 

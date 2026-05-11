@@ -93,7 +93,7 @@ def main():
     print("✅ Experiment tracking complete!")
     print(f"📁 Metadata stored in: ~/.datavint/metadata.db")
     print("\n💡 Next steps:")
-    print("  1. View lineage in dashboard: http://localhost:5173/experiments/learning_rate_sweep_demo")
+    print("  1. View lineage in dashboard: http://localhost:5173/playground/learning_rate_sweep_demo")
     print("  2. Query metadata with SQL:")
     print("     sqlite3 ~/.datavint/metadata.db 'SELECT * FROM model_runs;'")
     print("  3. Integrate with server API to visualize lineage graph")
