@@ -103,7 +103,7 @@ with dv.experiment("experiment_name") as exp:
 - Frontend: `client/src/views/ExperimentView.vue` (bipartite graph)
 
 **Testing:**
-- 8 comprehensive tests in `tests/test_experiment_tracking.py`
+- 8 comprehensive tests in `tests/api/test_experiment_tracking.py`
 - Demo script: `examples/experiment_tracking_demo.py`
 
 ## Bipartite Graph Visualization Pattern (2026-05-11)

@@ -92,7 +92,7 @@ cd client
 npm run dev
 
 # Terminal 3: Run tests
-pytest tests/test_experiment_tracking.py -v
+pytest tests/api/test_experiment_tracking.py -v
 ```
 
 ### SDK Usage in Notebooks
