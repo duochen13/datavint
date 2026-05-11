@@ -44,6 +44,10 @@ async function fetchExperimentLineage() {
 }
 
 // Mock data for development (based on dashboard mockup)
+// Winner Selection Logic:
+//   - Overall Best: Highest NE across all model runs (M2.2: 0.867)
+//   - Sweep Winner: Highest NE within that sweep (Sweep 1: M2 with 0.856, Sweep 2: M2.2 with 0.867)
+//   - For recommendation systems, higher NE (Normalized Entropy) = better model performance
 function loadMockData() {
   dataCommits.value = [
     {

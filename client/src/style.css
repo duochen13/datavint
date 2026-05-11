@@ -21,6 +21,7 @@
   --accent-green: #10B981;
   --accent-orange: #F59E0B;
   --accent-red: #EF4444;
+  --accent-light-green: #86EFAC; /* Light green for lower-tier metrics */
 
   /* Fonts */
   --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;

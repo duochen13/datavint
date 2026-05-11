@@ -81,7 +81,7 @@ const ariaLabel = computed(() => {
           {{ metric.value }}
           <span v-if="metric.quality === 'good'" class="sr-only">(excellent)</span>
           <span v-else-if="metric.quality === 'ok'" class="sr-only">(good)</span>
-          <span v-else-if="metric.quality === 'bad'" class="sr-only">(poor)</span>
+          <span v-else-if="metric.quality === 'bad'" class="sr-only">(viable)</span>
         </div>
       </div>
     </div>
@@ -218,14 +218,14 @@ const ariaLabel = computed(() => {
 }
 
 .metric-value.good {
-  color: var(--accent-green);
+  color: var(--accent-green); /* Highest NE (best performance) */
 }
 
 .metric-value.ok {
-  color: var(--accent-orange);
+  color: var(--accent-orange); /* Mid-tier NE */
 }
 
 .metric-value.bad {
-  color: var(--accent-red);
+  color: var(--accent-light-green); /* Lower NE (still viable, just not top tier) */
 }
 </style>
