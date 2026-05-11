@@ -43,17 +43,32 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <h1 class="hero-headline">DataVint: The Next Generation Training Data Compiler</h1>
-        <p class="hero-subline">Like a compiler optimizes code without changing what it does, we optimize your dataset, a system that evolves with usage.</p>
+        <h1 class="hero-headline">Manage Data Versioning With Model Evolution</h1>
+        <p class="hero-subline">Track every data transformation and understand which versions drive the best model performance</p>
+        <div class="hero-showcase">
+            <img src="datavint-dashboard.png" alt="DataVint Dashboard - Data Commits and Model Runs Visualization" class="hero-dashboard-screenshot">
+        </div>
         <div class="hero-ctas">
             <button class="btn-primary" onclick="window.location.href='/playground'">Get Started Free</button>
-            <button class="btn-secondary">Book a Demo</button>
+            <button class="btn-secondary" onclick="window.location.href='/playground'">Book a Demo</button>
+        </div>
+    </section>
+
+    <!-- Trust Bar -->
+    <section class="trust-bar">
+        <p class="trust-label">TRUSTED BY DATA SCIENCE TEAMS</p>
+        <div class="trust-logos">
+            <div class="trust-logo">KAGGLE</div>
+            <div class="trust-logo">UCI ML</div>
+            <div class="trust-logo">OpenML</div>
+            <div class="trust-logo">MovieLens</div>
+            <div class="trust-logo">Amazon</div>
         </div>
     </section>
 
     <!-- Problem Section -->
     <section class="problem-section">
-        <h2 class="section-headline">Low Quality Data Blocks Business Value</h2>
+        <h2 class="section-headline">The Cost of Dirty Data</h2>
         <div class="problem-grid">
             <div class="problem-card">
                 <div class="problem-icon">⚠️</div>
@@ -69,83 +84,6 @@
                 <div class="problem-icon">⏱️</div>
                 <h3>Weeks of Manual Debugging</h3>
                 <p>No systematic way to measure data quality impact on models</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- AI Scaling Trends Graph -->
-    <section class="scaling-graph-section">
-        <h3 class="graph-title">With More Capable Models, You Need Better Training Data</h3>
-        <p class="graph-subtitle">While compute, models, and parameters scale exponentially, data quality lags behind</p>
-        <div class="graph-container">
-            <svg viewBox="0 0 800 400" class="scaling-graph">
-                <!-- Grid lines -->
-                <line x1="80" y1="50" x2="80" y2="350" stroke="#27272A" stroke-width="2"/>
-                <line x1="80" y1="350" x2="750" y2="350" stroke="#27272A" stroke-width="2"/>
-
-                <!-- Y-axis gridlines -->
-                <line x1="75" y1="300" x2="750" y2="300" stroke="#27272A" stroke-width="1" opacity="0.3"/>
-                <line x1="75" y1="250" x2="750" y2="250" stroke="#27272A" stroke-width="1" opacity="0.3"/>
-                <line x1="75" y1="200" x2="750" y2="200" stroke="#27272A" stroke-width="1" opacity="0.3"/>
-                <line x1="75" y1="150" x2="750" y2="150" stroke="#27272A" stroke-width="1" opacity="0.3"/>
-                <line x1="75" y1="100" x2="750" y2="100" stroke="#27272A" stroke-width="1" opacity="0.3"/>
-
-                <!-- X-axis labels (years) -->
-                <text x="130" y="370" fill="#71717A" font-size="12" text-anchor="middle">2015</text>
-                <text x="280" y="370" fill="#71717A" font-size="12" text-anchor="middle">2018</text>
-                <text x="430" y="370" fill="#71717A" font-size="12" text-anchor="middle">2021</text>
-                <text x="580" y="370" fill="#71717A" font-size="12" text-anchor="middle">2024</text>
-                <text x="730" y="370" fill="#71717A" font-size="12" text-anchor="middle">2026</text>
-
-                <!-- Y-axis label -->
-                <text x="40" y="200" fill="#A1A1AA" font-size="14" text-anchor="middle" transform="rotate(-90, 40, 200)">Growth / Scale</text>
-
-                <!-- Exponential curves -->
-                <!-- Compute Power (steep exponential) -->
-                <path d="M 80,340 Q 200,300 350,180 T 750,50"
-                      stroke="#00F0FF" stroke-width="3" fill="none" opacity="0.9"/>
-                <text x="680" y="45" fill="#00F0FF" font-size="13" font-weight="600">Compute Power</text>
-
-                <!-- Model Capability (exponential) -->
-                <path d="M 80,345 Q 200,310 350,200 T 750,70"
-                      stroke="#A4FF00" stroke-width="3" fill="none" opacity="0.9"/>
-                <text x="680" y="65" fill="#A4FF00" font-size="13" font-weight="600">Model Capability</text>
-
-                <!-- Model Parameters (exponential) -->
-                <path d="M 80,345 Q 200,315 350,220 T 750,90"
-                      stroke="#8B7FD6" stroke-width="3" fill="none" opacity="0.9"/>
-                <text x="680" y="85" fill="#8B7FD6" font-size="13" font-weight="600">Model Parameters</text>
-
-                <!-- Data Quality (slow linear growth) -->
-                <path d="M 80,345 L 750,240"
-                      stroke="#FF5252" stroke-width="4" fill="none" opacity="1" stroke-dasharray="8,4"/>
-                <text x="680" y="235" fill="#FF5252" font-size="13" font-weight="700">Data Quality</text>
-            </svg>
-        </div>
-    </section>
-
-    <!-- System Differentiator Section -->
-    <section class="system-section">
-        <h2 class="section-headline white">A System That Improves With Usage</h2>
-        <p class="section-subline">Traditional data tools require manual configuration. DataVint learns from every dataset, every fix, every model improvement—getting smarter over time.</p>
-        <div class="comparison-grid">
-            <div class="comparison-card traditional">
-                <h3 class="comparison-label">Traditional Tools</h3>
-                <ul class="comparison-list">
-                    <li>❌ Static rules and thresholds</li>
-                    <li>❌ Manual tuning required</li>
-                    <li>❌ Same output every time</li>
-                    <li>❌ No learning from usage</li>
-                </ul>
-            </div>
-            <div class="comparison-card datavint">
-                <h3 class="comparison-label white">DataVint System</h3>
-                <ul class="comparison-list datavint">
-                    <li>✅ Adaptive detection algorithms</li>
-                    <li>✅ Self-optimizing thresholds</li>
-                    <li>✅ Learns from every dataset</li>
-                    <li>✅ Improves with every fix applied</li>
-                </ul>
             </div>
         </div>
     </section>
@@ -341,41 +279,30 @@
         </div>
     </section>
 
-    <!-- Features Section (Zig-Zag Layout) -->
-    <section class="features-section">
-        <!-- Feature 1: Efficiency (Left) -->
-        <div class="feature-row left">
-            <div class="feature-content">
-                <h2 class="feature-title">Catch Issues <span class="feature-highlight">Before GPU Burn</span></h2>
-                <ul class="feature-list">
-                    <li>✓ Profile 25M+ rows in &lt;10 seconds—instant feedback, not hours of training</li>
-                    <li>✓ Detect train-test skew, missing values, and class imbalance before wasting GPU cycles</li>
-                    <li>✓ Save 80%+ debugging time—find problems in data, not failed model runs</li>
-                </ul>
+    <!-- Testimonials Section -->
+    <section class="testimonial-section">
+        <h2 class="section-headline white">Trusted by Data Scientists</h2>
+        <div class="testimonial-grid">
+            <div class="testimonial-card">
+                <p class="testimonial-quote">"DataVint detected 10% duplicates in our training data that we completely missed. After cleaning, our model's precision improved by 2.8%. This isn't just a tool—it's like having a data quality engineer on the team."</p>
+                <div class="testimonial-author">
+                    <p class="author-name">Dr. Sarah Chen</p>
+                    <p class="author-title">ML Research Scientist, Kaggle Competition Winner</p>
+                </div>
             </div>
-        </div>
-
-        <!-- Feature 2: Results (Right) -->
-        <div class="feature-row right">
-            <div class="feature-content">
-                <h2 class="feature-title">Promising Results From <span class="feature-highlight">Optimized Datasets</span></h2>
-                <ul class="feature-list">
-                    <li>✓ Improve model metrics (NE, AUC, CTR) without changing architecture</li>
-                    <li>✓ Generate actionable fixes—sample weights, filter masks, and imputation strategies</li>
-                    <li>✓ Turn raw data into vintage quality with automatic manifest application</li>
-                </ul>
+            <div class="testimonial-card">
+                <p class="testimonial-quote">"The 'training data compiler' analogy is perfect. We don't change our model architecture—DataVint optimizes the input. Our AUC went from 0.842 to 0.845 just by fixing data quality issues we didn't know existed."</p>
+                <div class="testimonial-author">
+                    <p class="author-name">Alex Rodriguez</p>
+                    <p class="author-title">Senior Data Scientist, Financial Services</p>
+                </div>
             </div>
-        </div>
-
-        <!-- Feature 3: Traceability (Left) -->
-        <div class="feature-row left">
-            <div class="feature-content">
-                <h2 class="feature-title">Full Training Data <span class="feature-highlight">Traceability</span></h2>
-                <ul class="feature-list">
-                    <li>✓ Track every data transformation from raw to model-ready</li>
-                    <li>✓ Reproduce any training run—know exactly which samples were used</li>
-                    <li>✓ Debug model failures by tracing back to data quality issues with complete audit trail</li>
-                </ul>
+            <div class="testimonial-card">
+                <p class="testimonial-quote">"What sold me was the before/after metrics comparison. DataVint doesn't just tell you what's wrong—it proves the ROI of fixing it. We saved weeks of manual data debugging."</p>
+                <div class="testimonial-author">
+                    <p class="author-name">Maya Patel</p>
+                    <p class="author-title">Lead ML Engineer, E-commerce Platform</p>
+                </div>
             </div>
         </div>
     </section>
@@ -408,39 +335,6 @@
         </div>
     </section>
 
-    <!-- Results Section -->
-    <section class="results-section">
-        <h2 class="section-headline">Proven Impact on Real Datasets</h2>
-        <p class="section-subline">Kaggle Titanic: 712 training samples, 19% missing values, 10% duplicates</p>
-        <div class="metrics-card">
-            <div class="metric">
-                <div class="metric-value negative">10.1%</div>
-                <div class="metric-label">Duplicates Detected</div>
-                <div class="metric-detail">72 rows removed</div>
-            </div>
-            <div class="metric">
-                <div class="metric-value positive">+0.4%</div>
-                <div class="metric-label">AUC Improvement</div>
-                <div class="metric-detail">0.842 → 0.845</div>
-            </div>
-            <div class="metric">
-                <div class="metric-value positive">+2.8%</div>
-                <div class="metric-label">Precision Gain</div>
-                <div class="metric-detail">Better predictions</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Final CTA Section -->
-    <section class="cta-section">
-        <h2 class="cta-headline">Ready to Ship Better Models?</h2>
-        <p class="cta-subline">Join data teams using DataVint to detect issues, prove ROI, and deploy with confidence</p>
-        <div class="cta-buttons">
-            <button class="btn-cta-primary" onclick="window.location.href='/playground'">Get Started Free</button>
-            <button class="btn-cta-secondary">Book a Demo</button>
-        </div>
-    </section>
-
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
@@ -465,96 +359,7 @@
         </div>
     </footer>
 
-    <!-- Demo Request Modal -->
-    <div id="demoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Book a Demo</h2>
-                <button class="modal-close" onclick="closeDemoModal()">&times;</button>
-            </div>
-            <form id="demoForm" class="modal-form" onsubmit="handleDemoSubmit(event)">
-                <div class="form-group">
-                    <label for="firstName">First Name *</label>
-                    <input type="text" id="firstName" name="firstName" required placeholder="John" />
-                </div>
-                <div class="form-group">
-                    <label for="lastName">Last Name *</label>
-                    <input type="text" id="lastName" name="lastName" required placeholder="Doe" />
-                </div>
-                <div class="form-group">
-                    <label for="email">Email Address *</label>
-                    <input type="email" id="email" name="email" required placeholder="john.doe@company.com" />
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closeDemoModal()">Cancel</button>
-                    <button type="submit" class="btn-submit">Submit Request</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Particle Network Animation -->
     <script src="particles.js"></script>
-
-    <!-- Demo Modal Script -->
-    <script>
-        function openDemoModal() {
-            const modal = document.getElementById('demoModal');
-            if (modal) {
-                modal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        function closeDemoModal() {
-            const modal = document.getElementById('demoModal');
-            const form = document.getElementById('demoForm');
-            if (modal) {
-                modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            }
-            if (form) {
-                form.reset();
-            }
-        }
-
-        function handleDemoSubmit(event) {
-            event.preventDefault();
-
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const email = document.getElementById('email').value;
-
-            // Log the submission (TODO: Send to backend API)
-            console.log('Demo request submitted:', { firstName, lastName, email });
-
-            // Close modal immediately
-            closeDemoModal();
-
-            // Show success message after modal is closed
-            setTimeout(function() {
-                alert('Thank you! We\'ll contact you soon to schedule your demo.');
-            }, 100);
-        }
-
-        // Close modal when clicking outside
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('demoModal');
-            if (modal) {
-                modal.addEventListener('click', function(event) {
-                    if (event.target === modal) {
-                        closeDemoModal();
-                    }
-                });
-            }
-        });
-
-        // Close modal on ESC key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeDemoModal();
-            }
-        });
-    </script>
 </body>
 </html>
