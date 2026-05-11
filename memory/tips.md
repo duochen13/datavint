@@ -1,6 +1,9 @@
 # Useful Commands & Tips
 
 
+## [2026-05-11] See .claude/MEMORY_SYSTEM_DEMO.md for comprehensive guide on using the memory system
+
+
 ## [2026-05-11] Use ./.claude/scripts/update-memory.sh to quickly add dated entries to memory files
 
 **Quick add entries with automatic date formatting:**
