@@ -55,13 +55,13 @@ def get_experiment_lineage_mock(experiment_id: str) -> Dict:
                 "dataCommitId": "D1",
                 "message": "sample_rate=0.6",
                 "metrics": {
-                    "NE": {"value": 0.867, "quality": "good"},
+                    "NE": {"value": 0.701, "quality": "ok"},
                     "CTR": {"value": 0.0058, "quality": "good"},
                     "lr": {"value": 0.005, "quality": "neutral"},
                     "coverage": {"value": "94%", "quality": "good"},
                 },
                 "timestamp": datetime.now().isoformat(),
-                "best": True,
+                "sweepWinner": True,
                 "sweep": {"id": 2, "name": "Sample Rate (from D1, lr=0.005)"},
             },
             {
@@ -69,7 +69,7 @@ def get_experiment_lineage_mock(experiment_id: str) -> Dict:
                 "dataCommitId": "D1",
                 "message": "sample_rate=0.4",
                 "metrics": {
-                    "NE": {"value": 0.841, "quality": "ok"},
+                    "NE": {"value": 0.723, "quality": "bad"},
                     "CTR": {"value": 0.0051, "quality": "ok"},
                     "lr": {"value": 0.005, "quality": "neutral"},
                     "coverage": {"value": "89%", "quality": "ok"},
@@ -82,11 +82,10 @@ def get_experiment_lineage_mock(experiment_id: str) -> Dict:
                 "dataCommitId": "D0",
                 "message": "lr=0.005 ← selected for Sweep 2",
                 "metrics": {
-                    "NE": {"value": 0.856, "quality": "good"},
+                    "NE": {"value": 0.712, "quality": "ok"},
                     "CTR": {"value": 0.0053, "quality": "good"},
                 },
                 "timestamp": datetime.now().isoformat(),
-                "sweepWinner": True,
                 "sweep": {"id": 1, "name": "Learning Rate (from D0)"},
             },
             {
@@ -94,7 +93,7 @@ def get_experiment_lineage_mock(experiment_id: str) -> Dict:
                 "dataCommitId": "D0",
                 "message": "lr=0.010",
                 "metrics": {
-                    "NE": {"value": 0.823, "quality": "ok"},
+                    "NE": {"value": 0.734, "quality": "bad"},
                     "CTR": {"value": 0.0047, "quality": "neutral"},
                 },
                 "timestamp": datetime.now().isoformat(),
@@ -105,10 +104,11 @@ def get_experiment_lineage_mock(experiment_id: str) -> Dict:
                 "dataCommitId": "D0",
                 "message": "lr=0.020",
                 "metrics": {
-                    "NE": {"value": 0.801, "quality": "bad"},
+                    "NE": {"value": 0.698, "quality": "ok"},
                     "CTR": {"value": 0.0042, "quality": "neutral"},
                 },
                 "timestamp": datetime.now().isoformat(),
+                "sweepWinner": True,
                 "sweep": {"id": 1, "name": "Learning Rate (from D0)"},
             },
             {
@@ -116,10 +116,11 @@ def get_experiment_lineage_mock(experiment_id: str) -> Dict:
                 "dataCommitId": "D0",
                 "message": "lr=0.030",
                 "metrics": {
-                    "NE": {"value": 0.788, "quality": "bad"},
+                    "NE": {"value": 0.685, "quality": "good"},
                     "CTR": {"value": 0.0039, "quality": "neutral"},
                 },
                 "timestamp": datetime.now().isoformat(),
+                "best": True,
                 "sweep": {"id": 1, "name": "Learning Rate (from D0)"},
             },
         ],
