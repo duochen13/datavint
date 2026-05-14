@@ -778,6 +778,26 @@ CLI: fingerprint "abc123..." with 2 runs
 - `server/api/main.py` - Router registration
 - `client/src/views/ExperimentView.vue` - Mode toggle UI
 
+### 7. Ungrouped Runs Support (2026-05-14)
+**Problem**: LineageGraph only displayed runs with `sweep` property. CLI experiments don't use sweeps, so all runs were filtered out.
+
+**Decision**: Add `ungroupedRuns` computed property to display runs without sweep information.
+
+**Implementation**:
+- `const ungroupedRuns = computed(() => props.modelRuns.filter(run => !run.sweep))`
+- Template renders ungrouped runs after sweep clusters
+- Works for both CLI experiments (no sweeps) and SDK experiments (with sweeps)
+
+**Visual Improvements**:
+- Added `z-index: 10` to node components (DataCommitNode, ModelRunNode)
+- Reduced connection line opacity (0.6 → 0.3) and width (2 → 1.5)
+- Ensures connection lines stay in background, don't obstruct text
+
+**Files Changed**:
+- `client/src/components/LineageGraph.vue` - ungroupedRuns support + line styling
+- `client/src/components/DataCommitNode.vue` - z-index for stacking order
+- `client/src/components/ModelRunNode.vue` - z-index for stacking order
+
 **Integration Features**:
 - Visualize CLI experiments in bipartite graph
 - See multiple runs of same dataset

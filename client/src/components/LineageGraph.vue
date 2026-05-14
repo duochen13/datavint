@@ -49,6 +49,11 @@ const modelRunsBySweep = computed(() => {
   return Object.values(sweeps).sort((a, b) => b.id - a.id)
 })
 
+// Runs without sweep information (e.g., from CLI experiments)
+const ungroupedRuns = computed(() => {
+  return props.modelRuns.filter(run => !run.sweep)
+})
+
 // Handle node hover
 function handleDataNodeHover(nodeId, isHovering) {
   if (isHovering) {
@@ -219,6 +224,15 @@ onMounted(async () => {
               />
             </div>
           </div>
+
+          <!-- Ungrouped Runs (no sweep, e.g., CLI experiments) -->
+          <ModelRunNode
+            v-for="run in ungroupedRuns"
+            :key="run.id"
+            :run="run"
+            :active="activeModelNodes.has(run.id)"
+            @hover="handleModelNodeHover"
+          />
         </div>
       </section>
     </div>
@@ -245,9 +259,9 @@ onMounted(async () => {
 
 .connection-line {
   stroke: var(--accent-light-green);
-  stroke-width: 2;
+  stroke-width: 1.5;
   fill: none;
-  opacity: 0.6;
+  opacity: 0.3;
   transition: all 0.2s;
 }
 

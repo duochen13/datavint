@@ -74,6 +74,7 @@ const formattedTimestamp = computed(() => {
   cursor: pointer;
   transition: all 0.2s;
   outline: none;
+  z-index: 10;
 }
 
 .data-node:hover,
