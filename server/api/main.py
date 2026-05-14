@@ -7,7 +7,7 @@ FastAPI entry point with CORS middleware and route registration.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import playground, data, visualization, simple_profiling, code_playground, chat, diagnostics, experiments_mock, cli_experiments
+from .routes import playground, data, visualization, simple_profiling, code_playground, chat, diagnostics, experiments_mock, experiments, cli_experiments
 
 # Create FastAPI app
 app = FastAPI(
@@ -45,8 +45,10 @@ app.include_router(simple_profiling.router, prefix="/api/profiling", tags=["prof
 app.include_router(code_playground.router, tags=["code-playground"])
 app.include_router(chat.router, tags=["chat"])
 app.include_router(diagnostics.router, tags=["diagnostics"])
-app.include_router(experiments_mock.router, prefix="/api", tags=["experiments"])
+# SDK experiments router MUST come before mock to take precedence
+app.include_router(experiments.router, prefix="/api", tags=["sdk-experiments"])
 app.include_router(cli_experiments.router, prefix="/api", tags=["cli-experiments"])
+app.include_router(experiments_mock.router, prefix="/api", tags=["experiments-mock"])
 
 
 @app.get("/")
