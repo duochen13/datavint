@@ -7,13 +7,13 @@ This script demonstrates:
 3. Lineage visualization in bipartite graph
 
 After running this script, view the lineage at:
-http://localhost:5173/experiments/rec_model_sweep
+http://localhost:5173/experiments/titanic_survival
 """
 
 import pandas as pd
 import numpy as np
 import datavint as dv
-from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score
 from pathlib import Path
@@ -24,52 +24,51 @@ def main():
     print("🔬 DataVint Experiment Tracking & Lineage Demo\n")
 
     # ========================================================================
-    # Step 1: Create Sample Dataset
+    # Step 1: Load Titanic Dataset
     # ========================================================================
-    print("📊 Creating sample recommendation dataset...")
-    np.random.seed(42)
-    n_samples = 1000
-
-    df = pd.DataFrame({
-        'user_id': np.random.randint(1, 200, n_samples),
-        'item_id': np.random.randint(1, 50, n_samples),
-        'user_age': np.random.randint(18, 70, n_samples),
-        'engagement_time': np.random.exponential(30, n_samples),
-        'clicked': np.random.binomial(1, 0.3, n_samples)
-    })
+    print("📊 Loading Titanic dataset...")
+    df = pd.read_csv("raw_data/titanic/titanic.csv")
 
     print(f"   Dataset shape: {df.shape}")
-    print(f"   Click rate: {df['clicked'].mean():.2%}\n")
+    print(f"   Survival rate: {df['Survived'].mean():.2%}\n")
 
     # ========================================================================
     # Step 2: Track Data Versions and Model Runs
     # ========================================================================
-    with dv.experiment("rec_model_sweep") as exp:
+    with dv.experiment("titanic_survival") as exp:
 
-        # === Data Version 1: Original data ===
+        # === Data Version 1: Raw data with missing values ===
         print("=" * 70)
-        print("DATA VERSION D0: Original data with duplicates")
+        print("DATA VERSION D0: Raw data with missing values")
         print("=" * 70)
-        data_v0_id = exp.log_data(df, message="original data with duplicates")
+        data_v0_id = exp.log_data(df, message="raw titanic data")
         print(f"✓ Logged data commit: {data_v0_id}")
-        print(f"  Rows: {len(df)}, Columns: {len(df.columns)}\n")
+        print(f"  Rows: {len(df)}, Columns: {len(df.columns)}")
+        print(f"  Missing Age: {df['Age'].isna().sum()} rows")
+        print(f"  Missing Fare: {df['Fare'].isna().sum()} rows\n")
 
-        # === Sweep 1: Different tree depths on D0 ===
+        # === Sweep 1: Different max_depth values on D0 ===
         print("🌲 Sweep 1: Testing different max_depth values on D0\n")
 
-        features = ['user_age', 'engagement_time']
-        X = df[features]
-        y = df['clicked']
+        # Select numeric features for training
+        features = ['Pclass', 'Age', 'SibSp', 'Parch', 'Fare']
+        df_numeric = df[features + ['Survived']].dropna()
+
+        X = df_numeric[features]
+        y = df_numeric['Survived']
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
 
         for depth in [3, 5, 10]:
             # Train model
-            model = RandomForestClassifier(
+            model = XGBClassifier(
                 max_depth=depth,
                 n_estimators=10,
-                random_state=42
+                learning_rate=0.1,
+                random_state=42,
+                use_label_encoder=False,
+                eval_metric='logloss'
             )
             model.fit(X_train, y_train)
 
@@ -85,31 +84,35 @@ def main():
                     "accuracy": round(accuracy, 3),
                     "precision": round(precision, 3)
                 },
-                params={"max_depth": depth, "n_estimators": 10},
+                params={"max_depth": depth, "n_estimators": 10, "learning_rate": 0.1},
                 message=f"max_depth={depth}",
                 sweep_id=1,
-                sweep_name="Tree Depth (from D0)"
+                sweep_name="Max Depth (from D0)"
             )
             print(f"  {run_id}: depth={depth:2d} → "
                   f"accuracy={accuracy:.3f}, precision={precision:.3f}")
 
         print()
 
-        # === Data Version 2: Deduplicated ===
+        # === Data Version 2: Imputed missing values ===
         print("=" * 70)
-        print("DATA VERSION D1: Deduplicated data")
+        print("DATA VERSION D1: Imputed missing values")
         print("=" * 70)
-        df_dedup = df.drop_duplicates(subset=['user_id', 'item_id'])
-        data_v1_id = exp.log_data(df_dedup, message="deduped interactions")
+        df_imputed = df.copy()
+        df_imputed['Age'].fillna(df_imputed['Age'].median(), inplace=True)
+        df_imputed['Fare'].fillna(df_imputed['Fare'].median(), inplace=True)
+
+        data_v1_id = exp.log_data(df_imputed, message="age/fare imputed")
         print(f"✓ Logged data commit: {data_v1_id}")
-        print(f"  Rows: {len(df)} → {len(df_dedup)} "
-              f"(removed {len(df) - len(df_dedup)} duplicates)\n")
+        print(f"  Rows: {len(df_imputed)}, Columns: {len(df_imputed.columns)}")
+        print(f"  Missing Age: {df_imputed['Age'].isna().sum()} rows (was {df['Age'].isna().sum()})")
+        print(f"  Missing Fare: {df_imputed['Fare'].isna().sum()} rows (was {df['Fare'].isna().sum()})\n")
 
-        # === Sweep 2: Different n_estimators on D1 ===
-        print("🌲 Sweep 2: Testing different n_estimators on D1\n")
+        # === Sweep 2: Different learning rates on D1 ===
+        print("🌲 Sweep 2: Testing different learning rates on D1\n")
 
-        X_v1 = df_dedup[features]
-        y_v1 = df_dedup['clicked']
+        X_v1 = df_imputed[features]
+        y_v1 = df_imputed['Survived']
         X_train_v1, X_test_v1, y_train_v1, y_test_v1 = train_test_split(
             X_v1, y_v1, test_size=0.2, random_state=42
         )
@@ -117,12 +120,15 @@ def main():
         best_accuracy = 0
         best_run_id = None
 
-        for n_trees in [20, 50, 100]:
+        for lr in [0.01, 0.1, 0.3]:
             # Train model
-            model = RandomForestClassifier(
+            model = XGBClassifier(
                 max_depth=5,
-                n_estimators=n_trees,
-                random_state=42
+                n_estimators=50,
+                learning_rate=lr,
+                random_state=42,
+                use_label_encoder=False,
+                eval_metric='logloss'
             )
             model.fit(X_train_v1, y_train_v1)
 
@@ -139,15 +145,15 @@ def main():
                     "accuracy": round(accuracy, 3),
                     "precision": round(precision, 3)
                 },
-                params={"max_depth": 5, "n_estimators": n_trees},
-                message=f"n_estimators={n_trees}",
+                params={"max_depth": 5, "n_estimators": 50, "learning_rate": lr},
+                message=f"learning_rate={lr}",
                 sweep_id=2,
-                sweep_name="Num Trees (from D1, depth=5)",
+                sweep_name="Learning Rate (from D1, depth=5)",
                 best=is_best
             )
 
             status = "⭐ BEST" if is_best else ""
-            print(f"  {run_id}: n_trees={n_trees:3d} → "
+            print(f"  {run_id}: lr={lr:0.2f} → "
                   f"accuracy={accuracy:.3f}, precision={precision:.3f} {status}")
 
             if is_best:
@@ -177,10 +183,10 @@ def main():
     print("\n2. Start the frontend (if not running):")
     print("   cd client && npm run dev")
     print("\n3. Open in browser:")
-    print("   http://localhost:5173/experiments/rec_model_sweep")
+    print("   http://localhost:5173/experiments/titanic_survival")
     print("\n   You'll see:")
-    print("   • Left: Data commits (D0, D1)")
-    print("   • Right: Model runs (M0-M5) grouped by sweep")
+    print("   • Top: Data commits (D0, D1)")
+    print("   • Bottom: Model runs (M0-M5) grouped by sweep")
     print("   • Lines: Connections showing data → model lineage")
     print("   • Hover: Highlight lineage relationships")
     print()
@@ -204,7 +210,7 @@ def print_lineage_summary():
     commits_df = pd.read_sql_query("""
         SELECT id, message, row_count, column_count, hash
         FROM data_commits
-        WHERE experiment_id = 'rec_model_sweep'
+        WHERE experiment_id = 'titanic_survival'
         ORDER BY timestamp
     """, conn)
 
@@ -218,7 +224,7 @@ def print_lineage_summary():
     runs_df = pd.read_sql_query("""
         SELECT id, data_commit_id, message, metrics, sweep_id, sweep_name, best
         FROM model_runs
-        WHERE experiment_id = 'rec_model_sweep'
+        WHERE experiment_id = 'titanic_survival'
         ORDER BY timestamp
     """, conn)
 
