@@ -1,5 +1,8 @@
 # Gotchas & Things to Remember
 
+
+## [2026-05-14] Frontend router uses /playground/:experimentId not /playground/experiments/:experimentId - correct URL is localhost:5175/playground/titanic_survival
+
 ## Gstack
 
 - `/context-save` and `/context-restore` are separate from `/checkpoint`
