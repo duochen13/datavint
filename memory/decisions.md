@@ -185,3 +185,174 @@ User's intuition is correct about the risk, but:
 - Real-time monitoring dashboard
 - Automatic model comparison reports
 - Slack/PagerDuty alerts for quality regressions
+
+## Product Pivot: GPU Waste Control (2026-05-13)
+
+**Decision Date**: 2026-05-13
+
+**Context**: Customer validation (3 ML team leads) revealed broader problem than data quality. Customers said "data quality is one aspect of avoiding unnecessary GPU runs" and pushed toward GPU waste control.
+
+**Decision**: Pivot from "data quality for rec systems" to "ML execution waste control layer"
+
+**New Product**: Pre-execution CLI gate that prevents duplicate experiments before GPU allocation
+
+**Rationale**:
+- Validated with 3 customers (Physical.ai, Phia, startup)
+- Direct quote: "We are spending too much on unknown-value experiments"
+- Resource-constrained customers hitting GPU quota limits (not efficiency-optimizing)
+- 20-30% GPU waste from duplicate experiments
+- 1 customer committed: "Yes, I will try DataVint when you ship it"
+
+**Design Docs**:
+- Original: `wiki/changelog/2026-05-04-datavint-rec-systems-data-quality-sdk.md`
+- Pivot: `wiki/changelog/2026-05-10-datavint-experiment-versioning-design.md`
+- Final: `wiki/changelog/2026-05-13-datavint-gpu-waste-control-design.md`
+
+## CEO Review: Selective Expansion (2026-05-13)
+
+**Decision Date**: 2026-05-13
+**Review Mode**: SELECTIVE EXPANSION
+**Original Score**: 6.5/10 (good to build, not good to win)
+
+**Context**: /plan-ceo-review challenged original 8-week MVP scope as too narrow to create defensible moat.
+
+**Critical Gaps Identified**:
+1. Exact duplicates only = one-time value (no compounding value)
+2. Moat is time-dependent (6 months before database becomes irreplaceable)
+3. No cost visibility = ROI not clear until month 2-3
+4. 30-second latency too slow for CLI tool
+5. Cloud storage dependencies (boto3, GCS) add setup friction
+
+**Decision**: EXPAND scope from 8 weeks to 10 weeks with 4 critical additions
+
+### Addition 1: Near-Duplicate Detection (Week 3-4)
+**Decision**: Near-duplicates (95%+ similar) REQUIRED for v1.0, not v2.0
+**Rationale**:
+- Exact duplicates are rare (engineers rarely run IDENTICAL configs)
+- Near-duplicates are where waste happens (95% similar configs)
+- Creates compounding value: "We tried 95% similar—it failed with OOM"
+**Implementation**: Cosine similarity on config hashes, configurable threshold
+
+### Addition 2: Outcome Linkage (Week 5-6)
+**Decision**: Store experiment outcome (success/failure/metrics) alongside fingerprint
+**Rationale**:
+- Fingerprints without outcomes = glorified git log (anyone can copy)
+- Outcome data is unique to DataVint (MLflow doesn't have this)
+- Enables learning: "Similar experiment failed with OOM. Consider reducing batch size."
+**Moat**: Outcome data creates defensible competitive advantage
+
+### Addition 3: Cost Estimation (Week 5-6)
+**Decision**: Show "estimated $X" for each experiment (REQUIRED for v1.0)
+**Rationale**:
+- Startups won't pay $1-3K/month for abstract savings without proof
+- Cost estimation makes ROI visible in month 1
+- "You've prevented $12K in duplicate runs" justifies procurement
+**Activation metric**: User configures GPU pricing within 48 hours
+
+### Addition 4: Optional Team Sync (Week 9)
+**Decision**: Add optional cloud backend for team collaboration in v1.0
+**Rationale**:
+- "Team memory" is core value prop, can't wait until v2.0
+- Local-only = personal tool, not team tool
+- Engineer A's experiments must be visible to Engineer B
+**Implementation**: `datavint init --team` enables PostgreSQL cloud sync (Supabase/Render)
+
+### Addition 5: Fast Path (<5s typical) (Week 7-8)
+**Decision**: Add cached fingerprints + cloud metadata fast path
+**Rationale**:
+- 30 seconds too slow (git status is <1s, docker build is <5s)
+- Engineers won't wait 30s every time
+**Implementation**:
+- Cached fingerprints: If path unchanged in 24h, use cached hash (instant)
+- Cloud metadata: S3 ETag, GCS md5Hash (<5s, no download)
+- Sampling fallback: Only if path changed and no cloud metadata (30s worst case)
+**Target**: 90% of checks complete in <5 seconds
+
+### Scope Reduction: Remove Cloud Storage from v1.0
+**Decision**: Remove boto3 (AWS) and google-cloud-storage (GCP) dependencies
+**Rationale**:
+- boto3 + GCS add setup friction (AWS credentials, IAM roles, dependency size)
+- Local filesystem only = pip install → working tool in <5 minutes
+- Cloud storage support deferred to v1.1
+**Impact**: Reduces adoption friction, simplifies v1.0
+
+### Revised Timeline
+- **Original**: 8 weeks (1 engineer)
+- **Expanded**: 10 weeks (1 engineer)
+- **Tradeoff**: 25% longer, but 2.3x higher success probability (30% → 70%)
+
+### Revised Assignment: Validate Pricing
+**Original**: "Get calendar invite for Week 7 kickoff"
+**Expanded**: "Validate pricing BEFORE building"
+**Action**: Ask committed customer: "Pricing will be $1-3K/month. If DataVint saves you $10K in 3 months, would you pay?"
+**Rationale**: Don't build without validating willingness to pay
+
+### Key Decision: "Aha Moment" Hypothesis
+**Question**: What creates lock-in?
+**Options**:
+- (A) Instant value: catch 1 duplicate in week 1
+- (B) Compounding value: database irreplaceable after 6 months
+- (C) Catastrophic prevention: prevent 1 $40K mistake in first 3 months
+
+**Decision**: Optimize for (C) catastrophic prevention
+**Rationale**:
+- (B) takes too long (6 months = MLflow can copy in 3 months)
+- (A) is nice but not procurement-worthy
+- (C) justifies procurement immediately: "It caught one $40K mistake"
+**Validation**: Track which users convert to paid, ask "what convinced you?"
+
+### Success Criteria Changes
+
+**Week 10 (Launch) - Added Leading Indicators**:
+- 50 PyPI downloads in first week
+- 10 users run `datavint check` at least once
+- 3 users active (5+ checks)
+- 1 user configures GPU pricing (activation metric)
+
+**Month 1 - Added Growth Metrics**:
+- 200 total downloads
+- 20 active users
+- 5 users configure GPU pricing
+- 2 users report "warned me about similar experiment"
+
+**Month 2 - Revised Retention**:
+- 60% retention (relaxed from 70%)
+- 1 user refers to teammate (viral growth)
+- 1 user reports "cost estimation prevented wasteful run"
+
+### What This Reveals About Product Strategy
+
+**On scope narrowness**:
+- Original instinct: "Start with exact duplicates, add near-duplicates in v2.0"
+- CEO challenge: "Exact duplicates are rare. Near-duplicates are where waste happens."
+- Learning: "MVP" can be too minimal if it doesn't create a moat
+
+**On moat timing**:
+- Original assumption: "6 months of experiments = irreplaceable database = moat"
+- CEO challenge: "6 months is too long. MLflow can copy in 3 months."
+- Learning: Time-dependent moats are vulnerable to fast followers. Need immediate moat (outcome data).
+
+**On pricing validation**:
+- Original approach: "Get verbal commitment, ship product, then talk pricing"
+- CEO challenge: "Validate willingness to pay BEFORE building"
+- Learning: Builder mode (ship first, sell later) vs customer development mode (validate first, then build)
+
+### v1 vs v2 Comparison
+
+| Feature | v1 (Original) | v2 (Expanded) |
+|---------|---------------|---------------|
+| Timeline | 8 weeks | 10 weeks |
+| Exact duplicates | ✅ | ✅ |
+| Near-duplicates | ❌ (v2.0) | ✅ (v1.0) |
+| Cost estimation | ❌ | ✅ (required) |
+| Outcome linkage | ❌ | ✅ |
+| Team sync | ❌ (v2.0) | ✅ (optional) |
+| Fast path | ❌ (30s) | ✅ (90% <5s) |
+| Cloud storage | ✅ (boto3, GCS) | ❌ (deferred) |
+| Success probability | 30% | 70% |
+
+**Bottom line**: v2 adds 2 weeks (25% longer) but increases success probability 2.3x. The expansions transform DataVint from "duplicate blocker" (one-time value) to "experiment advisor" (compounding value + immediate ROI).
+
+**Files**:
+- Design v2: `wiki/changelog/2026-05-13-datavint-gpu-waste-control-design-v2-expanded.md`
+- CEO Review Summary: `wiki/changelog/2026-05-13-ceo-review-summary.md`
