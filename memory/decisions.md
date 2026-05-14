@@ -533,4 +533,148 @@ User's intuition is correct about the risk, but:
 - 34 comprehensive tests (26 unit + 8 integration)
 - Validated on real train/test splits
 
-**Next**: Week 5-6 will add outcome linkage (`datavint log-result`) and cost estimation.
+## Week 5-6 Implementation: Outcome Linkage + Cost Estimation (2026-05-13)
+
+**Decision Date**: 2026-05-13
+
+**Context**: Week 1-4 implemented duplicate detection. Week 5-6 adds the ability to track experiment outcomes and estimate costs, creating a feedback loop that makes duplicate warnings more actionable.
+
+**Decision**: Implemented outcome tracking via `datavint log-result` command and heuristic-based cost estimation.
+
+**Key Architectural Choices**:
+
+### 1. Outcome Storage Schema
+**Decision**: Extend `experiment_runs` table with outcome columns:
+- `status` (TEXT): success/failure/oom/timeout/cancelled
+- `metrics` (TEXT/JSON): key-value metrics (accuracy, loss, etc.)
+- `duration_hours` (REAL): actual training duration
+- `gpu_count` (INTEGER): number of GPUs used
+- `cost_usd` (REAL): calculated cost based on GPU price
+
+**Rationale**:
+- Reuses existing `experiment_runs` table (1:N relationship with fingerprints)
+- JSON for metrics allows flexible schema (different experiments track different metrics)
+- Separate duration/gpu_count/cost for cost-benefit analysis
+- Migration logic handles existing databases (ALTER TABLE ADD COLUMN)
+- Queryable: can analyze outcomes by status, cost range, etc.
+
+### 2. log-result Command Design
+**Decision**: `datavint log-result <fingerprint> --status <status> [options]`
+**Options**:
+- `--status`: Required (success/failure/oom/timeout/cancelled)
+- `--metric key=value`: Multiple allowed (e.g., --metric accuracy=0.92 --metric loss=0.08)
+- `--duration <hours>`: Optional training duration
+- `--gpu-count <n>`: Optional GPU count
+- `--notes <text>`: Optional failure analysis
+
+**Rationale**:
+- Fingerprint as positional argument (user gets it from check output)
+- Status as required field (minimum viable outcome tracking)
+- Multiple --metric flags (common pattern in CLI tools like git config)
+- Automatic cost calculation if duration, gpu_count, and config price available
+- Notes field for free-form failure analysis (e.g., "OOM at batch_size=256")
+- Exit code 0 on success, 2 on error (consistent with check command)
+
+### 3. Cost Estimation Heuristic
+**Decision**: Estimate cost based on dataset size with industry-standard training durations
+**Heuristics**:
+- Small (<10K rows): 0.5 hours, 1 GPU
+- Medium (10K-100K): 2 hours, 2 GPUs
+- Large (100K-1M): 8 hours, 4 GPUs
+- Very large (>1M): 24 hours, 8 GPUs
+- Adjust by column count: +20% if >50 cols, +50% if >100 cols
+
+**Rationale**:
+- Provides immediate ROI clarity without requiring user input
+- Based on typical ML training patterns (more data = longer training)
+- Conservative estimates (better to overestimate than underestimate cost)
+- Adjustable: users can set actual values via log-result after training
+- Displayed prominently in check output to emphasize cost impact
+- Uses GPU price from config (set via `datavint config --gpu-price`)
+
+**Limitations**:
+- Heuristic doesn't account for model complexity (simple vs transformer)
+- Assumes homogeneous dataset (same column types/distributions)
+- Doesn't consider hyperparameter tuning (multiple runs)
+- Future: could learn from actual outcomes to improve estimates
+
+### 4. Outcome Display in Check Command
+**Decision**: Show outcomes inline when displaying duplicates/similar experiments
+
+**For exact duplicates**:
+```
+⚠️  EXACT DUPLICATE DETECTED
+
+This exact experiment has been run 1 time(s) before:
+  ...
+  Last outcome:
+    Status:   success
+    Metrics:  accuracy=0.9200, loss=0.0800
+    Cost:     $165.00
+    Notes:    Baseline model with default params
+
+💡 Skipping this run would save ~$200.00
+```
+
+**For similar experiments**:
+```
+  1. Similarity: 98.5%
+     ...
+     Outcome:     ✅ success
+                  accuracy=0.92, loss=0.08
+                  Reduced batch size to avoid OOM
+```
+
+**Rationale**:
+- Actionable warnings: "This similar experiment failed with OOM" → user reduces batch size
+- Success indicators (✅/❌) provide quick visual feedback
+- Show first 2 metrics only (avoid clutter)
+- Truncate notes to 60 chars (with "..." if longer)
+- Display most recent outcome only (users can query history for full log)
+- Cost savings calculation makes skip decision quantifiable
+
+### 5. Multiple Outcomes Strategy
+**Decision**: Store all outcomes in `experiment_runs` table, display most recent in check
+**Rationale**:
+- Users re-run experiments after failures (want to see latest result)
+- Historical outcomes queryable via SQL for analysis (future `datavint analyze` command)
+- Run count in `experiment_fingerprints` increments on check, not log-result
+- Allows tracking: 1st run failed → 2nd run success → shows improvement
+
+### 6. Cost Calculation in log-result
+**Decision**: Auto-calculate cost if duration, gpu_count, and config price all available
+**Formula**: `cost_usd = duration_hours * gpu_count * gpu_price_per_hour`
+**Rationale**:
+- Single source of truth for cost (user doesn't provide --cost manually)
+- Graceful degradation: if no GPU price configured, just store duration/gpu_count
+- Displayed in confirmation: "Cost: $165.00" so user knows it was calculated
+- Future: could infer GPU type from cost (e.g., A100 vs H100)
+
+### 7. Integration with Existing Features
+**Decision**: Cost estimation shown BEFORE duplicate check (not after)
+**Rationale**:
+- User sees cost immediately (decision factor before reading warnings)
+- Cost displayed even if no duplicates found
+- Consistent placement: always after fingerprint, before results
+- Sets context for "Skipping would save $X" message
+
+**Implementation Files**:
+- `datavint/cli.py` - Added log-result command, _get_experiment_outcome(), _estimate_cost()
+- Updated check command to display cost estimation and outcomes
+- Extended database schema with migration logic
+- `tests/api/test_cli.py` - Added 8 comprehensive tests
+
+**Test Coverage**:
+- 8 new tests for Week 5-6 features
+- Total: 31 CLI tests passing (23 previous + 8 new)
+- Tested: log-result command, cost estimation, outcome display, multiple outcomes, invalid inputs
+
+**Week 5-6 Milestone**: ✅ ACHIEVED
+- `datavint log-result` command tracks outcomes (status, metrics, cost, notes)
+- Heuristic cost estimation based on dataset size
+- Outcomes displayed in check command for duplicates and similar experiments
+- Automatic cost calculation from duration + GPU count + config price
+- 8 comprehensive tests covering all features
+- Integration with check command for actionable warnings
+
+**Next**: Week 7-8 will add fast path optimization (<5s checks via caching).
