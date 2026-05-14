@@ -66,8 +66,8 @@ const formattedTimestamp = computed(() => {
 
 <style scoped>
 .data-node {
-  background: var(--bg-panel);
-  border: 2px solid var(--border);
+  background: rgba(0, 0, 0, 0.3); /* Dark transparent background */
+  border: 3px solid rgba(139, 92, 246, 0.3); /* Light purple border */
   border-radius: 8px;
   padding: 16px;
   position: relative;
@@ -75,21 +75,26 @@ const formattedTimestamp = computed(() => {
   transition: all 0.2s;
   outline: none;
   z-index: 10;
+  backdrop-filter: blur(8px);
+  width: 280px;
+  height: 120px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .data-node:hover,
 .data-node:focus {
-  border-color: var(--accent-purple);
+  border-color: rgba(139, 92, 246, 0.6);
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
 }
 
 .data-node:focus-visible {
-  outline: 2px solid var(--accent-purple);
+  outline: 2px solid rgba(139, 92, 246, 0.6);
   outline-offset: 2px;
 }
 
 .data-node.active {
-  border-color: var(--accent-purple);
+  border-color: rgba(139, 92, 246, 0.6);
   background: rgba(139, 92, 246, 0.05);
 }
 

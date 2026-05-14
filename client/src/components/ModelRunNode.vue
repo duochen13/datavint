@@ -49,11 +49,7 @@ const ariaLabel = computed(() => {
 <template>
   <article
     class="model-node"
-    :class="{
-      active,
-      best: run.best,
-      'sweep-winner': run.sweepWinner,
-    }"
+    :class="{ active }"
     :data-id="run.id"
     tabindex="0"
     role="button"
@@ -64,9 +60,6 @@ const ariaLabel = computed(() => {
     @keypress.enter="emit('click', run.id)"
     @keypress.space.prevent="emit('click', run.id)"
   >
-    <span v-if="run.best" class="best-badge">BEST</span>
-    <span v-else-if="run.sweepWinner" class="sweep-winner-badge">Sweep {{ run.sweep.id }} Winner</span>
-
     <div class="node-header">
       <span class="node-id">{{ run.id }}</span>
       <span class="node-timestamp">{{ formattedTimestamp }}</span>
@@ -74,14 +67,12 @@ const ariaLabel = computed(() => {
 
     <div class="node-message">{{ run.message }}</div>
 
+    <!-- Metrics: only show on hover -->
     <div v-if="run.metrics" class="metrics">
       <div v-for="(metric, key) in run.metrics" :key="key" class="metric">
         <div class="metric-label">{{ key }}</div>
-        <div class="metric-value" :class="metric.quality">
+        <div class="metric-value">
           {{ metric.value }}
-          <span v-if="metric.quality === 'good'" class="sr-only">(excellent)</span>
-          <span v-else-if="metric.quality === 'ok'" class="sr-only">(good)</span>
-          <span v-else-if="metric.quality === 'bad'" class="sr-only">(viable)</span>
         </div>
       </div>
     </div>
@@ -103,8 +94,8 @@ const ariaLabel = computed(() => {
 }
 
 .model-node {
-  background: var(--bg-panel);
-  border: 2px solid var(--border);
+  background: rgba(0, 0, 0, 0.3); /* Dark transparent background */
+  border: 3px solid rgba(139, 92, 246, 0.3); /* Light purple border */
   border-radius: 8px;
   padding: 16px;
   position: relative;
@@ -112,56 +103,27 @@ const ariaLabel = computed(() => {
   transition: all 0.2s;
   outline: none;
   z-index: 10;
+  backdrop-filter: blur(8px);
+  width: 280px;
+  height: 120px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .model-node:hover,
 .model-node:focus {
-  border-color: var(--accent-green);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
 }
 
 .model-node:focus-visible {
-  outline: 2px solid var(--accent-green);
+  outline: 2px solid rgba(139, 92, 246, 0.6);
   outline-offset: 2px;
 }
 
 .model-node.active {
-  border-color: var(--accent-green);
-  background: rgba(16, 185, 129, 0.05);
-}
-
-.model-node.best {
-  border-color: var(--accent-green);
-  border-width: 3px;
-}
-
-.model-node.sweep-winner {
-  border-color: var(--accent-orange);
-  background: rgba(245, 158, 11, 0.05);
-}
-
-.best-badge {
-  position: absolute;
-  top: -10px;
-  right: 12px;
-  background: var(--accent-green);
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-
-.sweep-winner-badge {
-  position: absolute;
-  top: -10px;
-  right: 12px;
-  background: var(--accent-orange);
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 12px;
+  border-color: rgba(139, 92, 246, 0.6);
+  background: rgba(139, 92, 246, 0.05);
 }
 
 .node-header {
@@ -190,17 +152,21 @@ const ariaLabel = computed(() => {
 }
 
 .metrics {
-  display: grid;
+  display: none; /* Hidden by default */
   grid-template-columns: 1fr 1fr;
   gap: 8px;
   margin-top: 12px;
 }
 
+.model-node:hover .metrics {
+  display: grid; /* Show on hover */
+}
+
 .metric {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 0, 0, 0.2); /* Dark background for metrics */
   padding: 8px;
   border-radius: 4px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .metric-label {
@@ -216,17 +182,5 @@ const ariaLabel = computed(() => {
   color: var(--text-primary);
   margin-top: 2px;
   font-family: var(--font-mono);
-}
-
-.metric-value.good {
-  color: var(--accent-green); /* Lowest NE (best performance) */
-}
-
-.metric-value.ok {
-  color: var(--accent-orange); /* Mid-tier NE */
-}
-
-.metric-value.bad {
-  color: var(--accent-light-green); /* Higher NE (still viable, just not top tier) */
 }
 </style>

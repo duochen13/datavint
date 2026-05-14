@@ -3,7 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DataCommitNode from '../components/DataCommitNode.vue'
 import ModelRunNode from '../components/ModelRunNode.vue'
-import LineageGraph from '../components/LineageGraph.vue'
+import LineageGraphHorizontal from '../components/LineageGraphHorizontal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -310,7 +310,7 @@ onMounted(() => {
 
     <!-- Experiment Lineage Graph -->
     <div v-else class="graph-container">
-      <LineageGraph
+      <LineageGraphHorizontal
         :data-commits="dataCommits"
         :model-runs="modelRuns"
         :connections="connections"
