@@ -356,3 +356,81 @@ User's intuition is correct about the risk, but:
 **Files**:
 - Design v2: `wiki/changelog/2026-05-13-datavint-gpu-waste-control-design-v2-expanded.md`
 - CEO Review Summary: `wiki/changelog/2026-05-13-ceo-review-summary.md`
+
+## Week 1 Implementation: CLI + Exact Duplicate Detection (2026-05-13)
+
+**Decision Date**: 2026-05-13
+**Status**: COMPLETED ✅
+
+**Context**: Started Week 1 of 10-week v2 implementation. Goal: Working CLI with exact duplicate detection.
+
+**Implementation Decisions**:
+
+### 1. CLI Framework: Click (not Typer)
+**Decision**: Use Click for CLI framework
+**Rationale**:
+- More mature and widely adopted than Typer
+- Simpler API for basic commands
+- Better documentation and community support
+- Lighter dependency (no Pydantic required)
+
+### 2. Database Schema: Separate from Experiment Tracking
+**Decision**: Created new `experiment_fingerprints` table, separate from existing `data_commits`
+**Rationale**:
+- `data_commits` is for experiment lineage tracking (data versioning)
+- `experiment_fingerprints` is for duplicate detection (pre-execution gate)
+- Different use cases, different access patterns
+- Allows independent evolution of both systems
+
+### 3. Fingerprinting Strategy: Sampling-Based
+**Decision**: Sample 0.1% of dataset (0.001) for fingerprinting
+**Rationale**:
+- <30 second target for 500GB dataset (500MB sample)
+- SHA256 on sampled data, first 16 characters (not 7 like git)
+- Deterministic (random_state=42) for reproducibility
+- Trade-off: collision risk vs speed (16 chars = 2^64 possibilities)
+
+### 4. Database Path: ~/.datavint/experiments.db (not ~/.datavint/metadata.db)
+**Decision**: Use separate database for CLI vs experiment tracking
+**Rationale**:
+- `metadata.db` used by `datavint.experiment()` context manager (SDK)
+- `experiments.db` used by `datavint check` CLI (pre-execution gate)
+- Separation of concerns: SDK ≠ CLI
+- Future: may merge or add sync layer
+
+### 5. Exit Codes: 0 (no duplicate), 1 (duplicate warning), 2 (error)
+**Decision**: Use standard Unix exit codes with semantic meaning
+**Rationale**:
+- 0 = success (safe to proceed, no duplicate)
+- 1 = warning (duplicate found, user should consider skipping)
+- 2 = error (invalid input, unsupported format, etc.)
+- Allows scripting: `datavint check data.csv && python train.py`
+
+### 6. File Format Support: CSV, Parquet, JSON (Week 1)
+**Decision**: Support CSV, Parquet, JSON in Week 1
+**Rationale**:
+- Most common ML data formats
+- All supported by pandas (no extra dependencies)
+- Cloud storage (S3/GCS) deferred to Week 7 (v1.1)
+
+### 7. Configuration: JSON file at ~/.datavint/config.json
+**Decision**: Store config in JSON file (not TOML, YAML, or env vars)
+**Rationale**:
+- Standard library support (no extra deps)
+- Simple key-value structure
+- Easy to read and edit manually
+- Future: may add ~/.datavint/config.toml for richer config
+
+**Implementation Files**:
+- `datavint/cli.py` - CLI commands (check, history, config)
+- `tests/api/test_cli.py` - 15 tests, all passing
+- `pyproject.toml` - Added Click dependency + CLI entry point
+
+**Week 1 Milestone**: ✅ ACHIEVED
+- Working `datavint check` command (exact duplicate detection)
+- Working `datavint history` command (show past experiments)
+- Working `datavint config` command (set GPU price for future use)
+- 15 tests passing
+- Tested on real datasets (Titanic, train.csv)
+
+**Next**: Week 3-4 will add near-duplicate detection (95%+ similarity) using cosine similarity.
