@@ -433,4 +433,104 @@ User's intuition is correct about the risk, but:
 - 15 tests passing
 - Tested on real datasets (Titanic, train.csv)
 
-**Next**: Week 3-4 will add near-duplicate detection (95%+ similarity) using cosine similarity.
+## Week 3-4 Implementation: Near-Duplicate Detection (2026-05-13)
+
+**Decision Date**: 2026-05-13
+
+**Context**: Week 1 implemented exact duplicate detection (100% match). Week 3-4 extends this to detect near-duplicates (95%+ similarity) to catch train/test splits, slightly modified datasets, and similar experiments.
+
+**Decision**: Implemented feature-based similarity scoring using cosine similarity on extracted dataset features.
+
+**Key Architectural Choices**:
+
+### 1. Feature Extraction Strategy
+**Decision**: Extract 7 categories of features from datasets:
+1. Column names (sorted for order independence)
+2. Column count and row count
+3. Data types distribution (numeric vs categorical ratio)
+4. Numeric statistics (mean, std, min, max averaged across columns)
+5. Categorical cardinality (unique values per column)
+6. Column name hashing (position-independent)
+7. Shape similarity (row/column counts on log scale)
+
+**Rationale**:
+- Captures both structure (columns, types) and content (statistics)
+- Normalized to [0, 1] range for consistent scaling
+- Position-independent (sorted columns, hash-based comparison)
+- Fast to compute (no full dataset comparison needed)
+- Works across different dataset sizes (train vs test)
+
+### 2. Similarity Metric: Cosine Similarity
+**Decision**: Use cosine similarity on feature vectors (scipy.spatial.distance.cosine)
+**Rationale**:
+- Range [0, 1] with clear semantic meaning (1 = identical, 0 = completely different)
+- Scale-invariant (works with different feature magnitudes)
+- Industry standard for high-dimensional similarity
+- Fast to compute (linear in feature vector length)
+- Better than Euclidean distance for mixed feature types
+
+### 3. Default Similarity Threshold: 0.95 (95%)
+**Decision**: Default threshold of 0.95 for near-duplicate detection
+**Rationale**:
+- Conservative threshold to avoid false positives
+- Catches train/test splits (typically 99%+ similar)
+- User-configurable via `--similarity` option
+- Exit code 1 (warning) when similar experiments found
+- Tested: Titanic train vs test = 99.8%, MovieLens train vs test = 99.9%
+
+### 4. Feature Storage in Database
+**Decision**: Store features as JSON in `experiment_fingerprints.features` column
+**Rationale**:
+- Enables similarity comparison without re-loading datasets
+- JSON format is human-readable and debuggable
+- SQLite TEXT column with JSON (no schema migration needed)
+- ~1KB per experiment (acceptable overhead)
+- Migration logic handles existing records (NULL features)
+
+### 5. Top 3 Similar Experiments Display
+**Decision**: Show only top 3 most similar experiments in output
+**Rationale**:
+- Prevents information overload
+- Most relevant results shown first
+- Mention "... and N more" if >3 found
+- Sorted by similarity (descending)
+- Includes similarity %, fingerprint, path, size, last run time
+
+### 6. Exit Code Strategy for Similar Experiments
+**Decision**: Exit code 1 (warning) when similar experiments found, even without exact duplicate
+**Rationale**:
+- Consistent with "found an issue" pattern
+- Allows scripting: `datavint check data.csv && python train.py` stops on similarity
+- User can override with `--similarity 1.0` to only stop on exact matches
+- Clear distinction: 0 = safe, 1 = warning, 2 = error
+
+### 7. Helper Functions: column_overlap, shape_similarity
+**Decision**: Provide auxiliary similarity functions for debugging/analysis
+**Rationale**:
+- `compute_column_overlap`: Jaccard similarity of column names
+- `compute_shape_similarity`: Row/column count similarity on log scale
+- Useful for understanding WHY datasets are similar
+- Exposed in API for potential CLI `--explain` flag (future)
+- Tested separately for correctness
+
+**Implementation Files**:
+- `datavint/similarity.py` - 269 lines (feature extraction, similarity computation)
+- `datavint/cli.py` - Updated check command with similarity detection
+- `tests/test_similarity.py` - 26 unit tests (feature extraction, similarity, helpers)
+- `tests/api/test_cli.py` - Added 8 near-duplicate detection tests
+
+**Test Coverage**:
+- 26 similarity module tests (feature extraction, vectors, similarity, helpers)
+- 8 CLI tests for near-duplicate detection (thresholds, edge cases, output format)
+- Total: 34 new tests, all passing
+- Tested on real datasets: Titanic train/test (99.8%), MovieLens train/test (99.9%)
+
+**Week 3-4 Milestone**: ✅ ACHIEVED
+- Feature-based similarity scoring (cosine similarity)
+- Configurable threshold via `--similarity` option (default 0.95)
+- Display top 3 similar experiments with metadata
+- Database schema updated to store features
+- 34 comprehensive tests (26 unit + 8 integration)
+- Validated on real train/test splits
+
+**Next**: Week 5-6 will add outcome linkage (`datavint log-result`) and cost estimation.
