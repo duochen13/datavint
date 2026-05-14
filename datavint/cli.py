@@ -79,9 +79,26 @@ def _ensure_db_exists(db_path: Path):
             timestamp TEXT NOT NULL,
             status TEXT,
             notes TEXT,
+            metrics TEXT,
+            duration_hours REAL,
+            gpu_count INTEGER,
+            cost_usd REAL,
             FOREIGN KEY (fingerprint_id) REFERENCES experiment_fingerprints(id)
         )
     """)
+
+    # Add Week 5-6 columns if they don't exist (for migration)
+    cursor.execute("PRAGMA table_info(experiment_runs)")
+    run_columns = [col[1] for col in cursor.fetchall()]
+
+    if 'metrics' not in run_columns:
+        cursor.execute("ALTER TABLE experiment_runs ADD COLUMN metrics TEXT")
+    if 'duration_hours' not in run_columns:
+        cursor.execute("ALTER TABLE experiment_runs ADD COLUMN duration_hours REAL")
+    if 'gpu_count' not in run_columns:
+        cursor.execute("ALTER TABLE experiment_runs ADD COLUMN gpu_count INTEGER")
+    if 'cost_usd' not in run_columns:
+        cursor.execute("ALTER TABLE experiment_runs ADD COLUMN cost_usd REAL")
 
     # Create indexes
     cursor.execute("""
@@ -262,6 +279,105 @@ def _check_duplicate(
     return exact_duplicate, similar_experiments
 
 
+def _get_experiment_outcome(fingerprint_id: int, db_path: Path) -> Optional[dict]:
+    """
+    Get the most recent outcome for an experiment.
+
+    Args:
+        fingerprint_id: ID of the experiment fingerprint
+        db_path: Path to database
+
+    Returns:
+        Dictionary with outcome data, or None if no outcomes logged
+    """
+    conn = sqlite3.connect(str(db_path))
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT status, metrics, duration_hours, gpu_count, cost_usd, notes, timestamp
+        FROM experiment_runs
+        WHERE fingerprint_id = ?
+        ORDER BY timestamp DESC
+        LIMIT 1
+    """, (fingerprint_id,))
+
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return None
+
+    return {
+        'status': row[0],
+        'metrics': json.loads(row[1]) if row[1] else {},
+        'duration_hours': row[2],
+        'gpu_count': row[3],
+        'cost_usd': row[4],
+        'notes': row[5],
+        'timestamp': row[6]
+    }
+
+
+def _estimate_cost(row_count: int, column_count: int, db_path: Path) -> Optional[dict]:
+    """
+    Estimate training cost based on dataset size and GPU configuration.
+
+    Uses heuristics:
+    - Small dataset (<10K rows): 0.5 hours, 1 GPU
+    - Medium dataset (10K-100K): 2 hours, 2 GPUs
+    - Large dataset (100K-1M): 8 hours, 4 GPUs
+    - Very large dataset (>1M): 24 hours, 8 GPUs
+
+    Args:
+        row_count: Number of rows in dataset
+        column_count: Number of columns in dataset
+        db_path: Path to database (to load GPU price)
+
+    Returns:
+        Dictionary with estimated duration, gpu_count, and cost_usd, or None if no GPU price configured
+    """
+    # Load GPU price from config
+    config_path = Path.home() / ".datavint" / "config.json"
+    if not config_path.exists():
+        return None
+
+    with open(config_path) as f:
+        cfg = json.load(f)
+
+    gpu_price = cfg.get('gpu_price_per_hour', 0)
+    if gpu_price <= 0:
+        return None
+
+    # Estimate based on dataset size
+    if row_count < 10_000:
+        duration_hours = 0.5
+        gpu_count = 1
+    elif row_count < 100_000:
+        duration_hours = 2.0
+        gpu_count = 2
+    elif row_count < 1_000_000:
+        duration_hours = 8.0
+        gpu_count = 4
+    else:
+        duration_hours = 24.0
+        gpu_count = 8
+
+    # Adjust for column count (more features = longer training)
+    if column_count > 100:
+        duration_hours *= 1.5
+    elif column_count > 50:
+        duration_hours *= 1.2
+
+    cost_usd = duration_hours * gpu_count * gpu_price
+
+    return {
+        'duration_hours': duration_hours,
+        'gpu_count': gpu_count,
+        'cost_usd': cost_usd,
+        'gpu_price': gpu_price
+    }
+
+
 def _store_fingerprint(
     fingerprint: str,
     dataset_path: str,
@@ -401,6 +517,15 @@ def check(dataset_path: str, db_path: str, sampling_rate: float, similarity: flo
             fingerprint, dataset_path, df, features, db_path_obj, similarity
         )
 
+        # Display cost estimation (Week 5-6 feature)
+        cost_estimate = _estimate_cost(len(df), len(df.columns), db_path_obj)
+        if cost_estimate:
+            click.secho("\n💰 COST ESTIMATION", fg='cyan', bold=True)
+            click.echo(f"\n  Estimated duration:  {cost_estimate['duration_hours']:.1f} hours")
+            click.echo(f"  Estimated GPU count: {cost_estimate['gpu_count']} × ${cost_estimate['gpu_price']:.2f}/hour")
+            click.echo(f"  Estimated cost:      ${cost_estimate['cost_usd']:,.2f}")
+            click.echo()
+
         # Display results
         found_issue = False
 
@@ -412,7 +537,23 @@ def check(dataset_path: str, db_path: str, sampling_rate: float, similarity: flo
             click.echo(f"  Last run:     {exact_duplicate['last_seen']}")
             click.echo(f"  Dataset path: {exact_duplicate['dataset_path']}")
             click.echo(f"  Dataset size: {exact_duplicate['row_count']:,} rows × {exact_duplicate['column_count']} columns")
-            click.echo(f"\n💡 Consider skipping this run to save GPU costs.")
+
+            # Show outcome if available (Week 5-6 feature)
+            outcome = _get_experiment_outcome(exact_duplicate['id'], db_path_obj)
+            if outcome:
+                click.echo(f"\n  Last outcome:")
+                click.echo(f"    Status:   {outcome['status']}")
+                if outcome['metrics']:
+                    click.echo(f"    Metrics:  {', '.join(f'{k}={v:.4f}' if isinstance(v, float) else f'{k}={v}' for k, v in outcome['metrics'].items())}")
+                if outcome['cost_usd']:
+                    click.echo(f"    Cost:     ${outcome['cost_usd']:,.2f}")
+                if outcome['notes']:
+                    click.echo(f"    Notes:    {outcome['notes']}")
+
+            if cost_estimate:
+                click.echo(f"\n💡 Skipping this run would save ~${cost_estimate['cost_usd']:,.2f}")
+            else:
+                click.echo(f"\n💡 Consider skipping this run to save GPU costs.")
             found_issue = True
 
         if similar_experiments:
@@ -431,6 +572,21 @@ def check(dataset_path: str, db_path: str, sampling_rate: float, similarity: flo
                 click.echo(f"     Dataset:     {exp['dataset_path']}")
                 click.echo(f"     Size:        {exp['row_count']:,} rows × {exp['column_count']} columns")
                 click.echo(f"     Last run:    {exp['last_seen']}")
+
+                # Show outcome if available (Week 5-6 feature)
+                outcome = _get_experiment_outcome(exp['id'], db_path_obj)
+                if outcome:
+                    status_icon = "✅" if outcome['status'] == 'success' else "❌"
+                    click.echo(f"     Outcome:     {status_icon} {outcome['status']}")
+                    if outcome['metrics']:
+                        metrics_str = ', '.join(f'{k}={v:.4f}' if isinstance(v, float) else f'{k}={v}'
+                                               for k, v in list(outcome['metrics'].items())[:2])  # Show first 2 metrics
+                        click.echo(f"                  {metrics_str}")
+                    if outcome['notes']:
+                        # Truncate notes if too long
+                        notes_display = outcome['notes'][:60] + '...' if len(outcome['notes']) > 60 else outcome['notes']
+                        click.echo(f"                  {notes_display}")
+
                 click.echo()
 
             if len(similar_experiments) > 3:
@@ -438,12 +594,16 @@ def check(dataset_path: str, db_path: str, sampling_rate: float, similarity: flo
                 click.echo()
 
             click.echo("💡 These similar experiments may indicate duplicate work.")
+            if cost_estimate:
+                click.echo(f"   Consider reviewing outcomes before proceeding (potential savings: ~${cost_estimate['cost_usd']:,.2f})")
             found_issue = True
 
         if not found_issue:
             # No duplicate or similar experiments found
             click.secho("\n✅ NO DUPLICATES FOUND", fg='green', bold=True)
             click.echo(f"\nThis is a new experiment configuration.")
+            if cost_estimate:
+                click.echo(f"Estimated cost to run: ${cost_estimate['cost_usd']:,.2f}")
             click.echo(f"Safe to proceed with training.\n")
 
         # Store fingerprint and features for future checks
@@ -594,6 +754,164 @@ def config(gpu_price: Optional[float], show: bool):
         json.dump(cfg, f, indent=2)
 
     click.echo(f"Configuration saved to {config_path}")
+
+
+@main.command()
+@click.argument('fingerprint')
+@click.option(
+    '--status',
+    type=click.Choice(['success', 'failure', 'oom', 'timeout', 'cancelled']),
+    required=True,
+    help='Experiment outcome status'
+)
+@click.option(
+    '--metric',
+    multiple=True,
+    help='Metric in key=value format (e.g., --metric accuracy=0.85 --metric loss=0.12)'
+)
+@click.option(
+    '--duration',
+    type=float,
+    help='Training duration in hours (e.g., 2.5)'
+)
+@click.option(
+    '--gpu-count',
+    type=int,
+    help='Number of GPUs used (e.g., 4)'
+)
+@click.option(
+    '--notes',
+    type=str,
+    help='Additional notes about the experiment'
+)
+@click.option(
+    '--db-path',
+    type=click.Path(),
+    default=str(DEFAULT_DB_PATH),
+    help='Path to experiments database'
+)
+def log_result(fingerprint: str, status: str, metric: tuple, duration: float,
+               gpu_count: int, notes: str, db_path: str):
+    """
+    Log the outcome of an experiment.
+
+    Week 5-6 feature: Track experiment outcomes (success/failure/metrics/cost)
+    to provide better recommendations in future duplicate warnings.
+
+    Examples:
+
+        $ datavint log-result abc123 --status success --metric accuracy=0.85
+
+        $ datavint log-result def456 --status failure --notes "OOM error with batch_size=256"
+
+        $ datavint log-result ghi789 --status success \\
+            --metric accuracy=0.92 --metric loss=0.08 \\
+            --duration 3.5 --gpu-count 4
+    """
+    try:
+        db_path_obj = Path(db_path)
+        _ensure_db_exists(db_path_obj)
+
+        conn = sqlite3.connect(str(db_path_obj))
+        cursor = conn.cursor()
+
+        # Find the fingerprint
+        cursor.execute("""
+            SELECT id, dataset_path, row_count, column_count
+            FROM experiment_fingerprints
+            WHERE fingerprint = ?
+        """, (fingerprint,))
+
+        row = cursor.fetchone()
+        if not row:
+            click.secho(f"\n❌ Fingerprint not found: {fingerprint}", fg='red', bold=True)
+            click.echo("\nUse `datavint history` to see available fingerprints.")
+            raise SystemExit(2)
+
+        fingerprint_id, dataset_path, row_count, column_count = row
+
+        # Parse metrics
+        metrics_dict = {}
+        for m in metric:
+            if '=' not in m:
+                click.secho(f"❌ Invalid metric format: {m}", fg='red')
+                click.echo("Use --metric key=value format (e.g., --metric accuracy=0.85)")
+                raise SystemExit(2)
+            key, value = m.split('=', 1)
+            try:
+                metrics_dict[key] = float(value)
+            except ValueError:
+                metrics_dict[key] = value
+
+        # Calculate cost if duration and gpu_count provided
+        cost_usd = None
+        if duration is not None and gpu_count is not None:
+            # Load GPU price from config
+            config_path = Path.home() / ".datavint" / "config.json"
+            if config_path.exists():
+                with open(config_path) as f:
+                    cfg = json.load(f)
+                gpu_price = cfg.get('gpu_price_per_hour', 0)
+                if gpu_price > 0:
+                    cost_usd = duration * gpu_count * gpu_price
+
+        # Store the run
+        cursor.execute("""
+            INSERT INTO experiment_runs
+            (fingerprint_id, dataset_path, timestamp, status, notes, metrics,
+             duration_hours, gpu_count, cost_usd)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            fingerprint_id,
+            dataset_path,
+            datetime.now().isoformat(),
+            status,
+            notes,
+            json.dumps(metrics_dict) if metrics_dict else None,
+            duration,
+            gpu_count,
+            cost_usd
+        ))
+
+        conn.commit()
+        conn.close()
+
+        # Display confirmation
+        click.secho(f"\n✅ Experiment outcome logged successfully", fg='green', bold=True)
+        click.echo(f"\n  Fingerprint: {fingerprint}")
+        click.echo(f"  Dataset:     {dataset_path}")
+        click.echo(f"  Size:        {row_count:,} rows × {column_count} columns")
+        click.echo(f"  Status:      {status}")
+
+        if metrics_dict:
+            click.echo(f"  Metrics:")
+            for key, value in metrics_dict.items():
+                if isinstance(value, float):
+                    click.echo(f"    {key}: {value:.4f}")
+                else:
+                    click.echo(f"    {key}: {value}")
+
+        if duration is not None:
+            click.echo(f"  Duration:    {duration:.1f} hours")
+
+        if gpu_count is not None:
+            click.echo(f"  GPU count:   {gpu_count}")
+
+        if cost_usd is not None:
+            click.echo(f"  Cost:        ${cost_usd:,.2f}")
+        elif duration is not None and gpu_count is not None:
+            click.echo(f"  Cost:        (not calculated - set GPU price with `datavint config --gpu-price`)")
+
+        if notes:
+            click.echo(f"  Notes:       {notes}")
+
+        click.echo()
+
+    except click.ClickException:
+        raise
+    except Exception as e:
+        click.secho(f"\n❌ ERROR: {str(e)}", fg='red', bold=True)
+        raise SystemExit(2)
 
 
 if __name__ == '__main__':

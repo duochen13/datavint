@@ -68,7 +68,7 @@ def test_check_duplicate_found(runner, temp_db, sample_csv):
     assert result2.exit_code == 1  # Warning (duplicate found)
     assert "EXACT DUPLICATE DETECTED" in result2.output
     assert "run 1 time(s) before" in result2.output
-    assert "Consider skipping this run" in result2.output
+    assert "Skipping this run would save" in result2.output or "Consider skipping this run" in result2.output
 
 
 def test_check_different_datasets(runner, temp_db, tmp_path):
@@ -474,3 +474,233 @@ def test_similarity_threshold_edge_cases(runner, temp_db, tmp_path):
     )
     # With threshold 1.0, will find exact match (100% similarity) and exit with code 1
     assert result_high.exit_code == 1  # Will find the exact same experiment
+
+
+# =============================================================================
+# Week 5-6 Tests: Outcome Linkage + Cost Estimation
+# =============================================================================
+
+def test_cost_estimation_display(runner, temp_db, tmp_path):
+    """Test that cost estimation is displayed in check output."""
+    # Create config with GPU price
+    config_path = Path.home() / ".datavint" / "config.json"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(config_path, 'w') as f:
+        json.dump({'gpu_price_per_hour': 4.76}, f)
+
+    # Create dataset
+    df = pd.DataFrame({
+        'feature': list(range(100)),
+        'label': [i % 2 for i in range(100)]
+    })
+    csv_path = tmp_path / "data.csv"
+    df.to_csv(csv_path, index=False)
+
+    # Check dataset
+    result = runner.invoke(main, ['check', str(csv_path), '--db-path', str(temp_db)])
+
+    assert result.exit_code == 0
+    # Should show cost estimation
+    assert "COST ESTIMATION" in result.output
+    assert "Estimated cost:" in result.output or "Estimated duration:" in result.output
+
+
+def test_log_result_success(runner, temp_db, sample_csv):
+    """Test logging a successful experiment result."""
+    # First, run check to create fingerprint
+    result_check = runner.invoke(main, ['check', sample_csv, '--db-path', str(temp_db)])
+    assert result_check.exit_code == 0
+
+    # Extract fingerprint from output
+    fingerprint = None
+    for line in result_check.output.split('\n'):
+        if 'Fingerprint:' in line:
+            fingerprint = line.split(':')[1].strip()
+            break
+
+    assert fingerprint is not None
+
+    # Log result
+    result_log = runner.invoke(
+        main,
+        ['log-result', fingerprint, '--status', 'success',
+         '--metric', 'accuracy=0.92', '--metric', 'loss=0.08',
+         '--duration', '2.5', '--gpu-count', '4',
+         '--notes', 'Test run completed',
+         '--db-path', str(temp_db)]
+    )
+
+    assert result_log.exit_code == 0
+    assert "outcome logged successfully" in result_log.output
+    assert "success" in result_log.output
+    assert "accuracy: 0.9200" in result_log.output
+    assert "loss: 0.0800" in result_log.output
+    assert "Duration:    2.5 hours" in result_log.output
+    assert "GPU count:   4" in result_log.output
+
+
+def test_log_result_failure(runner, temp_db, sample_csv):
+    """Test logging a failed experiment result."""
+    # First, run check to create fingerprint
+    result_check = runner.invoke(main, ['check', sample_csv, '--db-path', str(temp_db)])
+    assert result_check.exit_code == 0
+
+    # Extract fingerprint
+    fingerprint = None
+    for line in result_check.output.split('\n'):
+        if 'Fingerprint:' in line:
+            fingerprint = line.split(':')[1].strip()
+            break
+
+    assert fingerprint is not None
+
+    # Log failure result
+    result_log = runner.invoke(
+        main,
+        ['log-result', fingerprint, '--status', 'failure',
+         '--notes', 'OOM error with batch_size=256',
+         '--db-path', str(temp_db)]
+    )
+
+    assert result_log.exit_code == 0
+    assert "outcome logged successfully" in result_log.output
+    assert "failure" in result_log.output
+    assert "OOM error" in result_log.output
+
+
+def test_log_result_invalid_fingerprint(runner, temp_db):
+    """Test logging result with invalid fingerprint."""
+    result = runner.invoke(
+        main,
+        ['log-result', 'nonexistent123', '--status', 'success',
+         '--db-path', str(temp_db)]
+    )
+
+    assert result.exit_code == 2
+    assert "Fingerprint not found" in result.output
+
+
+def test_log_result_invalid_metric_format(runner, temp_db, sample_csv):
+    """Test logging result with invalid metric format."""
+    # First, run check to create fingerprint
+    result_check = runner.invoke(main, ['check', sample_csv, '--db-path', str(temp_db)])
+    assert result_check.exit_code == 0
+
+    # Extract fingerprint
+    fingerprint = None
+    for line in result_check.output.split('\n'):
+        if 'Fingerprint:' in line:
+            fingerprint = line.split(':')[1].strip()
+            break
+
+    # Log result with invalid metric (no '=' sign)
+    result_log = runner.invoke(
+        main,
+        ['log-result', fingerprint, '--status', 'success',
+         '--metric', 'invalid_format',
+         '--db-path', str(temp_db)]
+    )
+
+    assert result_log.exit_code == 2
+    assert "Invalid metric format" in result_log.output
+
+
+def test_check_shows_outcome_on_duplicate(runner, temp_db, sample_csv):
+    """Test that check command shows previous outcome on duplicate."""
+    # First check - no duplicate
+    result1 = runner.invoke(main, ['check', sample_csv, '--db-path', str(temp_db)])
+    assert result1.exit_code == 0
+
+    # Extract fingerprint
+    fingerprint = None
+    for line in result1.output.split('\n'):
+        if 'Fingerprint:' in line:
+            fingerprint = line.split(':')[1].strip()
+            break
+
+    # Log a result
+    runner.invoke(
+        main,
+        ['log-result', fingerprint, '--status', 'success',
+         '--metric', 'accuracy=0.85',
+         '--db-path', str(temp_db)]
+    )
+
+    # Second check - should show outcome
+    result2 = runner.invoke(main, ['check', sample_csv, '--db-path', str(temp_db)])
+
+    assert result2.exit_code == 1  # Duplicate found
+    assert "EXACT DUPLICATE DETECTED" in result2.output
+    assert "Last outcome:" in result2.output
+    assert "success" in result2.output
+    assert "accuracy" in result2.output
+
+
+def test_cost_calculation_with_config(runner, temp_db, tmp_path):
+    """Test cost calculation uses GPU price from config."""
+    # Set GPU price in config
+    config_path = Path.home() / ".datavint" / "config.json"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(config_path, 'w') as f:
+        json.dump({'gpu_price_per_hour': 10.0}, f)
+
+    # Create dataset
+    df = pd.DataFrame({'a': [1, 2, 3]})
+    csv_path = tmp_path / "data.csv"
+    df.to_csv(csv_path, index=False)
+
+    # Check dataset and extract fingerprint
+    result_check = runner.invoke(main, ['check', str(csv_path), '--db-path', str(temp_db)])
+    fingerprint = None
+    for line in result_check.output.split('\n'):
+        if 'Fingerprint:' in line:
+            fingerprint = line.split(':')[1].strip()
+            break
+
+    # Log result with duration and GPU count
+    result_log = runner.invoke(
+        main,
+        ['log-result', fingerprint, '--status', 'success',
+         '--duration', '1.0', '--gpu-count', '2',
+         '--db-path', str(temp_db)]
+    )
+
+    assert result_log.exit_code == 0
+    # Cost should be 1.0 hours * 2 GPUs * $10.0/hour = $20.00
+    assert "Cost:        $20.00" in result_log.output
+
+
+def test_multiple_outcomes_shows_latest(runner, temp_db, sample_csv):
+    """Test that check shows the most recent outcome when multiple exist."""
+    # First check
+    result1 = runner.invoke(main, ['check', sample_csv, '--db-path', str(temp_db)])
+    fingerprint = None
+    for line in result1.output.split('\n'):
+        if 'Fingerprint:' in line:
+            fingerprint = line.split(':')[1].strip()
+            break
+
+    # Log first outcome
+    runner.invoke(
+        main,
+        ['log-result', fingerprint, '--status', 'failure',
+         '--notes', 'First run - failed',
+         '--db-path', str(temp_db)]
+    )
+
+    # Log second outcome (more recent)
+    runner.invoke(
+        main,
+        ['log-result', fingerprint, '--status', 'success',
+         '--notes', 'Second run - success',
+         '--db-path', str(temp_db)]
+    )
+
+    # Check should show the most recent outcome
+    result2 = runner.invoke(main, ['check', sample_csv, '--db-path', str(temp_db)])
+
+    assert result2.exit_code == 1
+    assert "success" in result2.output
+    assert "Second run - success" in result2.output
+    # Should not show first run's notes
+    assert "First run - failed" not in result2.output
