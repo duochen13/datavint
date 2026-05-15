@@ -107,6 +107,7 @@ class ExperimentContext:
                 best INTEGER DEFAULT 0,
                 sweep_id INTEGER,
                 sweep_name TEXT,
+                status TEXT DEFAULT 'init',
                 FOREIGN KEY (data_commit_id) REFERENCES data_commits(id)
             )
         """)
@@ -222,6 +223,77 @@ class ExperimentContext:
         self._current_data_commit_id = commit_id
         return commit_id
 
+    def start_run(
+        self,
+        data_commit_id: Optional[str] = None,
+        params: Optional[Dict[str, Any]] = None,
+        message: Optional[str] = None,
+        run_id: Optional[str] = None,
+        sweep_id: Optional[int] = None,
+        sweep_name: Optional[str] = None
+    ) -> str:
+        """
+        Start a model training run (marks as 'running' status).
+
+        Use this before training begins to show the run is in progress.
+        Call log_run() after training completes to mark as 'completed'.
+
+        Args:
+            data_commit_id: Data version used (defaults to last logged data)
+            params: Hyperparameters used (e.g., {"lr": 0.005})
+            message: Description of this run
+            run_id: Optional custom ID (auto-generated if not provided)
+            sweep_id: Optional sweep/group ID for hyperparameter sweeps
+            sweep_name: Optional sweep description
+
+        Returns:
+            Model run ID (e.g., "M0", "M1")
+
+        Example:
+            >>> run_id = exp.start_run(params={"lr": 0.005}, message="training...")
+            >>> # ... train model ...
+            >>> exp.log_run(run_id=run_id, metrics={"accuracy": 0.85})
+        """
+        # Use last logged data commit if not specified
+        if data_commit_id is None:
+            if self._current_data_commit_id is None:
+                raise ValueError(
+                    "data_commit_id not specified and no data has been logged yet. "
+                    "Call log_data() first or provide data_commit_id explicitly."
+                )
+            data_commit_id = self._current_data_commit_id
+
+        # Generate ID if not provided
+        cursor = self.conn.cursor()
+        if run_id is None:
+            cursor.execute(
+                "SELECT COUNT(*) FROM model_runs WHERE experiment_id = ?",
+                (self.experiment_id,)
+            )
+            count = cursor.fetchone()[0]
+            run_id = f"M{count}"
+
+        # Insert model run with 'running' status
+        cursor.execute("""
+            INSERT INTO model_runs
+            (id, experiment_id, data_commit_id, message, params,
+             timestamp, sweep_id, sweep_name, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            run_id,
+            self.experiment_id,
+            data_commit_id,
+            message,
+            json.dumps(params) if params else None,
+            datetime.now().isoformat(),
+            sweep_id,
+            sweep_name,
+            'running'
+        ))
+
+        self.conn.commit()
+        return run_id
+
     def log_run(
         self,
         metrics: Dict[str, float],
@@ -267,8 +339,33 @@ class ExperimentContext:
                 )
             data_commit_id = self._current_data_commit_id
 
-        # Generate ID if not provided
         cursor = self.conn.cursor()
+
+        # Check if run_id exists (from start_run)
+        if run_id is not None:
+            cursor.execute(
+                "SELECT id FROM model_runs WHERE experiment_id = ? AND id = ?",
+                (self.experiment_id, run_id)
+            )
+            existing = cursor.fetchone()
+
+            if existing:
+                # Update existing run with metrics and mark as completed
+                cursor.execute("""
+                    UPDATE model_runs
+                    SET metrics = ?, message = ?, best = ?, status = 'completed'
+                    WHERE experiment_id = ? AND id = ?
+                """, (
+                    json.dumps(metrics),
+                    message,
+                    1 if best else 0,
+                    self.experiment_id,
+                    run_id
+                ))
+                self.conn.commit()
+                return run_id
+
+        # Generate ID if not provided
         if run_id is None:
             cursor.execute(
                 "SELECT COUNT(*) FROM model_runs WHERE experiment_id = ?",
@@ -277,12 +374,12 @@ class ExperimentContext:
             count = cursor.fetchone()[0]
             run_id = f"M{count}"
 
-        # Insert model run
+        # Insert new model run with completed status
         cursor.execute("""
             INSERT INTO model_runs
             (id, experiment_id, data_commit_id, message, metrics, params,
-             timestamp, best, sweep_id, sweep_name)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             timestamp, best, sweep_id, sweep_name, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             run_id,
             self.experiment_id,
@@ -293,7 +390,8 @@ class ExperimentContext:
             datetime.now().isoformat(),
             1 if best else 0,
             sweep_id,
-            sweep_name
+            sweep_name,
+            'completed'
         ))
 
         self.conn.commit()

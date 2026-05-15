@@ -1,22 +1,25 @@
 """
-DataVint Book Recommendation Experiment with XGBoost
+DataVint Book Recommendation Experiment with Logistic Regression
 
 This script demonstrates experiment tracking on a real Kaggle dataset:
 - Book Recommendation Dataset from Kaggle
 - Data versioning: raw → filtered → feature engineered
-- XGBoost model training with hyperparameter sweeps
+- Logistic Regression with hyperparameter grid search (C × penalty)
+- Dual tracking: DataVint (lineage) + MLflow (metrics)
 - Lineage visualization in bipartite graph
 """
 
 import pandas as pd
-import numpy as np
 import datavint as dv
-from xgboost import XGBClassifier
+import mlflow
+import mlflow.sklearn
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, roc_auc_score
 from pathlib import Path
 import sqlite3
 import os
+from itertools import product
 
 # Dataset path from kagglehub download
 DATASET_PATH = "/Users/duochen/.cache/kagglehub/datasets/arashnic/book-recommendation-dataset/versions/3"
@@ -30,10 +33,9 @@ def main():
     # ========================================================================
     print("📊 Loading book recommendation dataset from Kaggle...")
 
-    # Load ratings (sample to speed up demo)
+    # Load ratings (full dataset)
     df_ratings = pd.read_csv(
-        os.path.join(DATASET_PATH, "Ratings.csv"),
-        nrows=50000  # Sample for faster processing
+        os.path.join(DATASET_PATH, "Ratings.csv")
     )
 
     # Load books
@@ -57,8 +59,12 @@ def main():
     print(f"   Mean rating: {df['Book-Rating'].mean():.2f}\n")
 
     # ========================================================================
-    # Step 2: Track Data Versions and Model Runs
+    # Step 2: Track Data Versions and Model Runs (DataVint + MLflow)
     # ========================================================================
+
+    # Set MLflow experiment
+    mlflow.set_experiment("book_recommendations_logistic_regression")
+
     with dv.experiment("book_recommendations") as exp:
 
         # === Data Version 1: Raw merged data ===
@@ -70,9 +76,6 @@ def main():
         print(f"  Rows: {len(df)}, Columns: {len(df.columns)}")
         print(f"  Missing Age: {df['Age'].isna().sum()} rows")
         print(f"  Missing Year: {df['Year-Of-Publication'].isna().sum()} rows\n")
-
-        # === Sweep 1: Different max_depth on raw data ===
-        print("🌲 Sweep 1: Testing different max_depth values on D0\n")
 
         # Prepare features (drop rows with missing values for simplicity)
         df_clean = df.dropna(subset=['Age', 'Year-Of-Publication'])
@@ -87,56 +90,10 @@ def main():
         # Create binary target: high rating (>= 7)
         df_clean['high_rating'] = (df_clean['Book-Rating'] >= 7).astype(int)
 
-        # Features: user age, book publication year
-        features = ['Age', 'Year-Of-Publication']
-        X = df_clean[features]
-        y = df_clean['high_rating']
+        print(f"  Clean data shape: {df_clean.shape}")
+        print(f"  High rating rate: {df_clean['high_rating'].mean():.2%}\n")
 
-        print(f"  Clean data shape: {X.shape}")
-        print(f"  High rating rate: {y.mean():.2%}\n")
-
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42
-        )
-
-        for depth in [3, 5, 10]:
-            # Train model
-            model = XGBClassifier(
-                max_depth=depth,
-                n_estimators=20,
-                learning_rate=0.1,
-                random_state=42,
-                use_label_encoder=False,
-                eval_metric='logloss'
-            )
-            model.fit(X_train, y_train)
-
-            # Evaluate
-            y_pred = model.predict(X_test)
-            y_prob = model.predict_proba(X_test)[:, 1]
-            accuracy = accuracy_score(y_test, y_pred)
-            precision = precision_score(y_test, y_pred, zero_division=0)
-            auc = roc_auc_score(y_test, y_prob)
-
-            # Log run
-            run_id = exp.log_run(
-                data_commit_id=data_v0_id,
-                metrics={
-                    "accuracy": round(accuracy, 3),
-                    "precision": round(precision, 3),
-                    "auc": round(auc, 3)
-                },
-                params={"max_depth": depth, "n_estimators": 20, "learning_rate": 0.1},
-                message=f"max_depth={depth}",
-                sweep_id=1,
-                sweep_name="Max Depth (from D0)"
-            )
-            print(f"  {run_id}: depth={depth:2d} → "
-                  f"accuracy={accuracy:.3f}, auc={auc:.3f}")
-
-        print()
-
-        # === Data Version 2: Feature engineered ===
+        # === Data Version 1: Feature engineered ===
         print("=" * 70)
         print("DATA VERSION D1: Feature engineering")
         print("=" * 70)
@@ -159,8 +116,10 @@ def main():
         print(f"  Rows: {len(df_engineered)}, Columns: {len(df_engineered.columns)}")
         print(f"  New features: book_age, age_group\n")
 
-        # === Sweep 2: Different learning rates on D1 ===
-        print("🌲 Sweep 2: Testing different learning rates on D1\n")
+        # === Grid Search: C (regularization) × penalty type ===
+        print("=" * 70)
+        print("🔍 GRID SEARCH: C (regularization) × penalty type")
+        print("=" * 70)
 
         features_v1 = ['Age', 'Year-Of-Publication', 'book_age', 'age_group']
         X_v1 = df_engineered[features_v1]
@@ -169,51 +128,102 @@ def main():
             X_v1, y_v1, test_size=0.2, random_state=42
         )
 
+        # Grid search parameters
+        C_values = [0.01, 0.1, 1.0]  # Regularization strength (smaller = stronger)
+        penalties = ['l1', 'l2', None]  # Regularization type
+
+        print(f"Testing {len(C_values)} × {len(penalties)} = "
+              f"{len(C_values) * len(penalties)} combinations\n")
+
         best_auc = 0
         best_run_id = None
 
-        for lr in [0.01, 0.1, 0.3]:
-            # Train model
-            model = XGBClassifier(
-                max_depth=5,
-                n_estimators=50,
-                learning_rate=lr,
-                random_state=42,
-                use_label_encoder=False,
-                eval_metric='logloss'
-            )
-            model.fit(X_train_v1, y_train_v1)
+        # Grid search: all combinations
+        for C, penalty in product(C_values, penalties):
+            # Select appropriate solver for penalty type
+            if penalty == 'l1':
+                solver = 'saga'  # saga supports l1
+            elif penalty is None:
+                solver = 'lbfgs'  # lbfgs supports None
+            else:  # l2
+                solver = 'lbfgs'  # lbfgs is fast for l2
 
-            # Evaluate
-            y_pred = model.predict(X_test_v1)
-            y_prob = model.predict_proba(X_test_v1)[:, 1]
-            accuracy = accuracy_score(y_test_v1, y_pred)
-            precision = precision_score(y_test_v1, y_pred, zero_division=0)
-            auc = roc_auc_score(y_test_v1, y_prob)
+            # Format penalty for display
+            penalty_str = 'none' if penalty is None else penalty
 
-            # Log run
-            is_best = auc > best_auc
-            run_id = exp.log_run(
+            # Start DataVint run (shows as 'running' with pulsing yellow indicator)
+            run_id = exp.start_run(
                 data_commit_id=data_v1_id,
-                metrics={
-                    "accuracy": round(accuracy, 3),
-                    "precision": round(precision, 3),
-                    "auc": round(auc, 3)
-                },
-                params={"max_depth": 5, "n_estimators": 50, "learning_rate": lr},
-                message=f"learning_rate={lr}",
-                sweep_id=2,
-                sweep_name="Learning Rate (from D1, depth=5)",
-                best=is_best
+                params={"C": C, "penalty": penalty_str, "solver": solver},
+                message=f"C={C}, penalty={penalty_str}",
+                sweep_id=1,
+                sweep_name="Grid Search: C × penalty"
             )
 
-            status = "⭐ BEST" if is_best else ""
-            print(f"  {run_id}: lr={lr:0.2f} → "
-                  f"accuracy={accuracy:.3f}, auc={auc:.3f} {status}")
+            print(f"  🟡 {run_id}: Training C={C:7.2f}, penalty={penalty_str:5s}, solver={solver:8s}...")
 
-            if is_best:
-                best_auc = auc
-                best_run_id = run_id
+            # Start MLflow run
+            with mlflow.start_run(run_name=f"{run_id}_C{C}_penalty{penalty_str}"):
+                # Log parameters to MLflow
+                mlflow.log_param("C", C)
+                mlflow.log_param("penalty", penalty_str)
+                mlflow.log_param("solver", solver)
+                mlflow.log_param("max_iter", 1000)
+                mlflow.log_param("random_state", 42)
+                mlflow.log_param("data_version", data_v1_id)
+                mlflow.log_param("datavint_run_id", run_id)
+
+                # Train model
+                model = LogisticRegression(
+                    C=C,
+                    penalty=penalty,
+                    solver=solver,
+                    max_iter=1000,
+                    random_state=42
+                )
+                model.fit(X_train_v1, y_train_v1)
+
+                # Evaluate
+                y_pred = model.predict(X_test_v1)
+                y_prob = model.predict_proba(X_test_v1)[:, 1]
+                accuracy = accuracy_score(y_test_v1, y_pred)
+                precision = precision_score(y_test_v1, y_pred, zero_division=0)
+                auc = roc_auc_score(y_test_v1, y_prob)
+
+                # Log metrics to MLflow
+                mlflow.log_metric("accuracy", accuracy)
+                mlflow.log_metric("precision", precision)
+                mlflow.log_metric("auc", auc)
+
+                # Log model to MLflow
+                mlflow.sklearn.log_model(model, "model")
+
+                # Log feature coefficients for interpretability
+                for i, feature in enumerate(features_v1):
+                    mlflow.log_param(f"coef_{feature}", round(model.coef_[0][i], 4))
+
+                # Update DataVint run with results (changes to green 'completed')
+                is_best = auc > best_auc
+                exp.log_run(
+                    run_id=run_id,
+                    metrics={
+                        "accuracy": round(accuracy, 3),
+                        "precision": round(precision, 3),
+                        "auc": round(auc, 3)
+                    },
+                    best=is_best
+                )
+
+                # Log best model tag to MLflow
+                if is_best:
+                    mlflow.set_tag("best_model", "true")
+
+                status = "⭐ BEST" if is_best else "✓"
+                print(f"     {status} {run_id}: accuracy={accuracy:.3f}, auc={auc:.3f}\n")
+
+                if is_best:
+                    best_auc = auc
+                    best_run_id = run_id
 
     print()
     print("=" * 70)
@@ -277,7 +287,7 @@ def print_lineage_summary():
     # Model runs
     print("\nModel Runs:")
     runs_df = pd.read_sql_query("""
-        SELECT id, data_commit_id, message, metrics, sweep_id, sweep_name, best
+        SELECT id, data_commit_id, message, metrics, sweep_id, sweep_name, best, status
         FROM model_runs
         WHERE experiment_id = 'book_recommendations'
         ORDER BY timestamp
@@ -292,11 +302,20 @@ def print_lineage_summary():
 
         # Parse metrics
         import json
-        metrics = json.loads(row['metrics'])
-        metrics_str = ", ".join(f"{k}={v}" for k, v in metrics.items())
+        metrics = json.loads(row['metrics']) if row['metrics'] else {}
+        metrics_str = ", ".join(f"{k}={v}" for k, v in metrics.items()) if metrics else "no metrics"
+
+        # Status indicator
+        status_icons = {
+            'init': '⚪',
+            'running': '🟡',
+            'completed': '🟢',
+            'failed': '🔴'
+        }
+        status_icon = status_icons.get(row['status'], '⚪')
 
         best_marker = "⭐" if row['best'] else " "
-        print(f"    {best_marker} {row['id']} (from {row['data_commit_id']}): "
+        print(f"    {status_icon} {best_marker} {row['id']} (from {row['data_commit_id']}): "
               f"{row['message']} → {metrics_str}")
 
     conn.close()

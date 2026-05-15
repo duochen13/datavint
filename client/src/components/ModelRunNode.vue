@@ -14,6 +14,36 @@ const props = defineProps({
 
 const emit = defineEmits(['hover', 'click'])
 
+// Status indicator configuration
+const statusConfig = computed(() => {
+  const status = props.run.status || 'init'
+
+  const configs = {
+    init: {
+      color: 'rgba(156, 163, 175, 0.5)', // Gray
+      label: 'Initialized',
+      animate: false
+    },
+    running: {
+      color: 'rgba(251, 191, 36, 1)', // Amber/Yellow
+      label: 'Running',
+      animate: true
+    },
+    completed: {
+      color: 'rgba(34, 197, 94, 1)', // Green
+      label: 'Completed',
+      animate: false
+    },
+    failed: {
+      color: 'rgba(239, 68, 68, 1)', // Red
+      label: 'Failed',
+      animate: false
+    }
+  }
+
+  return configs[status] || configs.init
+})
+
 // Format timestamp
 const formattedTimestamp = computed(() => {
   const date = new Date(props.run.timestamp)
@@ -61,7 +91,16 @@ const ariaLabel = computed(() => {
     @keypress.space.prevent="emit('click', run.id)"
   >
     <div class="node-header">
-      <span class="node-id">{{ run.id }}</span>
+      <div class="node-header-left">
+        <div
+          class="status-indicator"
+          :class="{ 'status-pulse': statusConfig.animate }"
+          :style="{ backgroundColor: statusConfig.color }"
+          :title="statusConfig.label"
+          :aria-label="`Status: ${statusConfig.label}`"
+        ></div>
+        <span class="node-id">{{ run.id }}</span>
+      </div>
       <span class="node-timestamp">{{ formattedTimestamp }}</span>
     </div>
 
@@ -131,6 +170,35 @@ const ariaLabel = computed(() => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
+}
+
+.node-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.status-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
 }
 
 .node-id {

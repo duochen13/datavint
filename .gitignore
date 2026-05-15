@@ -51,3 +51,6 @@ dmypy.json
 .env*.local
 dist/
 .gstack/
+
+# MLflow / Experiment Tracking
+mlruns/

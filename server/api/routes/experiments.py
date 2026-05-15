@@ -190,7 +190,7 @@ async def get_sdk_experiment_lineage(
 
     # Get all model runs for this experiment
     cursor.execute("""
-        SELECT id, data_commit_id, message, metrics, params, timestamp, best, sweep_id, sweep_name
+        SELECT id, data_commit_id, message, metrics, params, timestamp, best, sweep_id, sweep_name, status
         FROM model_runs
         WHERE experiment_id = ?
         ORDER BY timestamp ASC
@@ -240,6 +240,7 @@ async def get_sdk_experiment_lineage(
             "message": row[2] or params_str,
             "metrics": _format_metrics(row[3]),
             "timestamp": row[5],
+            "status": row[9] or "init",  # status column (init/running/completed)
         }
 
         # Add best flag
