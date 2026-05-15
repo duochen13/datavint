@@ -1,5 +1,5 @@
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, computed, watch } from 'vue'
 
 const messages = ref([
   {
@@ -40,8 +40,41 @@ const textarea = ref(null)
 const suggestedQueries = [
   'Compare M2.1 vs M2.2',
   'Show all NE scores',
-  'Explain Sweep 2',
+  '/help',
 ]
+
+// Command autocomplete
+const availableCommands = [
+  { command: '/clear', description: 'Clear chat history' },
+  { command: '/help', description: 'Show available commands' },
+]
+
+const showCommandSuggestions = ref(false)
+const selectedCommandIndex = ref(0)
+
+// Filter commands based on current input
+const filteredCommands = computed(() => {
+  if (!input.value.startsWith('/')) {
+    return []
+  }
+
+  const query = input.value.toLowerCase()
+  const filtered = availableCommands.filter(cmd =>
+    cmd.command.toLowerCase().startsWith(query)
+  )
+
+  return filtered
+})
+
+// Watch input to show/hide suggestions
+watch(input, (newValue) => {
+  if (newValue.startsWith('/') && newValue.length > 0) {
+    showCommandSuggestions.value = filteredCommands.value.length > 0
+    selectedCommandIndex.value = 0
+  } else {
+    showCommandSuggestions.value = false
+  }
+})
 
 function addMessage(content, type = 'user') {
   messages.value.push({
@@ -66,6 +99,18 @@ async function sendMessage() {
   const message = input.value.trim()
   if (!message) return
 
+  // Handle slash commands
+  if (message.startsWith('/')) {
+    handleCommand(message)
+    input.value = ''
+
+    // Reset textarea height
+    if (textarea.value) {
+      textarea.value.style.height = 'auto'
+    }
+    return
+  }
+
   addMessage(message, 'user')
   input.value = ''
 
@@ -83,12 +128,71 @@ async function sendMessage() {
   }, 800)
 }
 
+function handleCommand(command) {
+  const cmd = command.toLowerCase().trim()
+
+  switch (cmd) {
+    case '/clear':
+      messages.value = [{
+        id: Date.now(),
+        content: '👋 Hi! I can help you understand your experiment results. Try asking me about your data or models.',
+        type: 'assistant',
+        timestamp: new Date().toISOString(),
+      }]
+      break
+
+    case '/help':
+      addMessage('/help', 'user')
+      addMessage(
+        'Available commands:\n\n' +
+        '• /clear - Clear chat history\n' +
+        '• /help - Show this help message\n\n' +
+        'You can also ask questions about your experiments!',
+        'assistant'
+      )
+      break
+
+    default:
+      addMessage(command, 'user')
+      addMessage(
+        `Unknown command: ${command}\n\nType /help to see available commands.`,
+        'assistant'
+      )
+  }
+}
+
 function useSuggestedQuery(query) {
   input.value = query
   textarea.value?.focus()
 }
 
+function selectCommand(command) {
+  input.value = command + ' '
+  showCommandSuggestions.value = false
+  textarea.value?.focus()
+}
+
 function handleKeypress(e) {
+  // Handle autocomplete navigation
+  if (showCommandSuggestions.value) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      selectedCommandIndex.value = Math.min(selectedCommandIndex.value + 1, filteredCommands.value.length - 1)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      selectedCommandIndex.value = Math.max(selectedCommandIndex.value - 1, 0)
+    } else if (e.key === 'Tab' || e.key === 'Enter') {
+      if (filteredCommands.value.length > 0) {
+        e.preventDefault()
+        selectCommand(filteredCommands.value[selectedCommandIndex.value].command)
+      }
+    } else if (e.key === 'Escape') {
+      showCommandSuggestions.value = false
+    }
+    return
+  }
+
+  // Regular enter to send
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault()
     sendMessage()
@@ -153,6 +257,21 @@ function formatTimestamp(isoString) {
     <!-- Input -->
     <div class="chat-input-container">
       <label for="chat-input" class="sr-only">Ask a question</label>
+
+      <!-- Command suggestions dropdown -->
+      <div v-if="showCommandSuggestions" class="command-suggestions">
+        <div
+          v-for="(cmd, index) in filteredCommands"
+          :key="cmd.command"
+          :class="['command-suggestion', { selected: index === selectedCommandIndex }]"
+          @click="selectCommand(cmd.command)"
+          @mouseenter="selectedCommandIndex = index"
+        >
+          <span class="command-text">{{ cmd.command }}</span>
+          <span class="command-description">{{ cmd.description }}</span>
+        </div>
+      </div>
+
       <div class="chat-input-wrapper">
         <textarea
           id="chat-input"
@@ -397,5 +516,53 @@ function formatTimestamp(isoString) {
 .send-button:disabled {
   background: var(--border);
   cursor: not-allowed;
+}
+
+/* Command Suggestions Dropdown */
+.command-suggestions {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  margin-bottom: 8px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.command-suggestion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border);
+}
+
+.command-suggestion:last-child {
+  border-bottom: none;
+}
+
+.command-suggestion:hover,
+.command-suggestion.selected {
+  background: var(--bg-hover);
+}
+
+.command-text {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-purple);
+}
+
+.command-description {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-left: 12px;
 }
 </style>

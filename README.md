@@ -3,17 +3,24 @@
 
 # DataVint
 
-**Data Quality Detection & Optimization for Machine Learning**
+**ML Experiment Tracking & Data Quality Optimization**
 
-From raw data to vintage quality—refine your training set before burning GPUs on unpromising results.
+Stop wasting GPU hours on duplicate experiments and bad data. DataVint tracks your ML experiments with visual lineage graphs and detects data quality issues before training.
 
-> A compiler for your training data—optimize datasets without changing your model.
+> Track what you've tried. Fix what's broken. Train smarter.
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](https://github.com/duochen13/datavint/releases)
 
 ## 🎉 What's New in v0.2
+
+✨ **Experiment Tracking & Lineage Visualization**
+- Track data versions and model runs with visual lineage graphs
+- See which experiments succeeded/failed in real-time
+- Compare metrics across hyperparameter sweeps
+- Dual tracking: DataVint (lineage) + MLflow (metrics)
+- Interactive web UI at http://localhost:5175/playground
 
 ✨ **Manifest Generation & Application** - Automatically fix data quality issues!
 - Generate manifests from detected issues
@@ -23,7 +30,39 @@ From raw data to vintage quality—refine your training set before burning GPUs 
 
 ---
 
-## 🚀 Quick Start (30 seconds)
+## 🚀 Quick Start
+
+### Experiment Tracking
+
+```python
+import datavint as dv
+import pandas as pd
+
+# Create an experiment
+with dv.experiment("my_ml_experiment") as exp:
+    # Log data version
+    df = pd.read_csv("train.csv")
+    data_id = exp.log_data(df, message="initial training data")
+
+    # Start a training run
+    run_id = exp.start_run(
+        data_commit_id=data_id,
+        params={"lr": 0.01, "depth": 5},
+        message="baseline model"
+    )
+
+    # ... train your model ...
+
+    # Log results
+    exp.log_run(
+        run_id=run_id,
+        metrics={"accuracy": 0.89, "auc": 0.92}
+    )
+
+# View lineage graph at http://localhost:5175/playground
+```
+
+### Data Quality Checks
 
 ```python
 import datavint as dv
@@ -38,7 +77,7 @@ stats = dv.generate_statistics("train.csv", label_col="click")
 issues = dv.detect_issues(stats)
 dv.display_issues(issues)
 
-# 4. Generate manifest to fix issues (NEW in v0.2!)
+# 4. Generate manifest to fix issues
 manifest = dv.generate_manifest(stats)
 
 # 5. Apply corrections
@@ -119,6 +158,15 @@ model.fit(cleaned_data)  # → AUC: 0.824 (+6.2%)
 ## ✨ Features
 
 ### Current (v0.2)
+
+✅ **Experiment Tracking** - Track ML experiments with lineage visualization
+- Data versioning with automatic fingerprinting (SHA-256)
+- Model run tracking with status indicators (init/running/completed/failed)
+- Visual lineage graphs showing data → model relationships
+- Sweep tracking for hyperparameter searches
+- Dual tracking: DataVint (lineage) + MLflow (metrics)
+- Interactive web UI with real-time updates
+- Chat assistant for experiment Q&A
 
 ✅ **Data Profiling** - Quick dataset overview (< 1 sec)
 - Shape, types, missing values, label distribution
@@ -321,12 +369,13 @@ print(f"After correction: {len(corrected_issues)} issues (fixed {len(issues) - l
 
 ```
 datavint/
-├── datavint/                    # Core package
+├── datavint/                    # Core Python package
 │   ├── __init__.py            # Public API
+│   ├── experiment.py          # Experiment tracking (NEW)
 │   ├── profiling.py           # Data profiling
 │   ├── statistics.py          # Statistics generation
 │   ├── issues.py              # Issue detection orchestration
-│   ├── manifest.py            # Manifest generation & application (v0.2)
+│   ├── manifest.py            # Manifest generation & application
 │   ├── config.py              # Configuration & thresholds
 │   ├── types.py               # Dataclasses
 │   └── detectors/             # 11 issue detectors
@@ -342,18 +391,42 @@ datavint/
 │       ├── entropy.py
 │       └── cardinality.py
 │
-├── docs/                       # Documentation
+├── server/                     # FastAPI backend (NEW)
+│   └── api/
+│       └── routes/
+│           └── experiments.py  # Lineage API endpoints
+│
+├── client/                     # Vue.js frontend (NEW)
+│   └── src/
+│       ├── components/        # UI components
+│       │   ├── DataCommitNode.vue
+│       │   ├── ModelRunNode.vue
+│       │   ├── LineageGraphHorizontal.vue
+│       │   └── ChatPanel.vue
+│       └── views/
+│           └── ExperimentView.vue
+│
+├── wiki/                       # Documentation
+│   ├── architecture/          # System architecture
 │   ├── api/                   # API reference
+│   ├── guides/                # User guides
 │   ├── features/              # Feature specs
-│   └── changelog/             # Product design & architecture
+│   └── changelog/             # Design history
+│
+├── memory/                     # Agent memory
+│   ├── patterns.md            # Coding patterns
+│   ├── decisions.md           # Architectural decisions
+│   ├── gotchas.md             # Common pitfalls
+│   └── tips.md                # Useful commands
 │
 ├── notebooks/                  # Jupyter notebooks
 │   ├── quickstart.ipynb       # 5-minute intro
-│   └── data_profiling_demo.ipynb  # Complete guide
+│   └── data_profiling_demo.ipynb
 │
 ├── examples/                   # Python examples
-│   ├── demo_profiling.py
-│   └── quick_profile.py
+│   ├── book_recommendation_experiment.py  # Logistic regression grid search
+│   ├── book_recommendation_hybrid_experiment.py  # SVD + XGBoost
+│   └── evaluate_hybrid_model.py  # Comprehensive evaluation
 │
 ├── tests/                      # Unit & integration tests
 │   └── detectors/
