@@ -312,3 +312,42 @@ export default defineConfig({
 ```
 
 **Where**: `client/src/views/ExperimentView.vue:46`
+
+### 6. Removing Vue Composable Import But Not Usage
+
+**Fixed**: 2026-05-16 (commit 076a508)
+
+**Problem**: When removing unused Vue Router composables from imports, forgot to remove the corresponding variable declaration. This causes a runtime error and blank graph rendering.
+
+**Error Symptoms**:
+- Lineage graph area completely black
+- No data visualization rendering
+- JavaScript error: "useRouter is not defined"
+- Silent failure (no error message to user)
+
+**Fix**:
+```javascript
+// ❌ BAD - Removed from imports but still used
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
+// useRouter removed from imports ↑
+
+const route = useRoute()
+const router = useRouter()  // ← ERROR: useRouter not imported!
+```
+
+```javascript
+// ✅ GOOD - Remove both import and usage
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+// router declaration removed ✓
+```
+
+**Prevention**:
+- When removing imports, search for all usages of that import in the file
+- Use IDE "Find Usages" before removing imports
+- Run dev server to catch runtime errors immediately
+
+**Where**: `client/src/views/ExperimentView.vue:9`
