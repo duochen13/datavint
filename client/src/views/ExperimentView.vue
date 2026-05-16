@@ -6,7 +6,6 @@ import ModelRunNode from '../components/ModelRunNode.vue'
 import LineageGraphHorizontal from '../components/LineageGraphHorizontal.vue'
 
 const route = useRoute()
-const router = useRouter()
 
 // Experiment data
 const experimentId = computed(() => route.params.experimentId || 'test_learning_rate_experiment')
