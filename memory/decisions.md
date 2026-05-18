@@ -1,5 +1,52 @@
 # Architectural Decisions
 
+## [2026-05-17] Product Rebranding: DataVint → NanoML
+
+**Decision Date**: 2026-05-17
+
+**Context**: Product pivot from GPU waste control to ML Training Observability & Root-Cause Analysis required rebranding to better reflect the product vision.
+
+**Decision**: Rebrand from DataVint to NanoML across all project files, documentation, and code.
+
+**Name Rationale**:
+- "Nano" suggests precision, small-scale analysis, and atomic-level observation
+- "ML" clearly indicates machine learning domain
+- Shorter, cleaner brand name (6 characters vs 8)
+- Better positioning for observability product (not just data quality)
+
+**Scope of Changes**:
+- All design documents renamed and content updated
+- CLAUDE.md project instructions updated
+- Website files (docs/index.html, dashboard mockups)
+- CLI commands: `datavint` → `nanoml`
+- File paths and references across 14 files
+- Maintained all superseded design history with updated branding
+
+**Files Changed**:
+- `CLAUDE.md` - Main project instructions
+- `docs/index.html` - Landing page
+- `docs/README.md` - Docs README
+- `docs/design/nanoml-dashboard-mockup*.html` - Dashboard mockups
+- `wiki/changelog/*.md` - All design documents (5 files renamed)
+- `wiki/website/*.md` - Website documentation
+
+**Product Evolution Timeline**:
+1. 2026-05-04: DataVint - Recommendation Systems Data Quality SDK
+2. 2026-05-10: DataVint - Experiment-Level Data Versioning
+3. 2026-05-13: DataVint - GPU Waste Control Layer (v2)
+4. 2026-05-17: **NanoML** - ML Training Observability & Root-Cause Analysis (v3)
+
+**Why Rebrand Now**:
+- Major product pivot from GPU waste prevention to observability
+- New value proposition: "Datadog for ML decisions, not ML metrics"
+- Broader market positioning (observability vs cost savings)
+- Clean break from previous product direction
+- Better alignment with agent-driven ML future
+
+**Status**: ✅ IMPLEMENTED (2026-05-17)
+
+**Commit**: `f36d02d rebrand: DataVint → NanoML across all files`
+
 ## [2026-05-14] Horizontal Graph Layout with Consistent Purple Borders
 
 **Decision Date**: 2026-05-14
