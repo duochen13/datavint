@@ -1,5 +1,28 @@
 # Gotchas & Things to Remember
 
+## [2026-05-17] Rebranding: Don't Forget Static Assets
+
+**Context**: When rebranding DataVint → NanoML, updated HTML to reference `nanoml-dashboard.png` but forgot to rename the actual image file.
+
+**Problem**:
+- Updated `docs/index.html` to reference `nanoml-dashboard.png`
+- But image file was still named `datavint-dashboard.png`
+- Result: Broken image on website
+
+**Fix**:
+```bash
+mv docs/datavint-dashboard.png docs/nanoml-dashboard.png
+```
+
+**Lesson**: When doing text replacements during rebranding, remember to also:
+1. Rename actual asset files (images, fonts, etc.)
+2. Check for hardcoded URLs in CSS/JavaScript
+3. Update favicons and meta images
+4. Test the website locally to catch broken references
+
+**Prevention**:
+- After text replacement, grep for old brand name in file names: `find . -name "*datavint*"`
+- Check for broken images: open website and inspect network tab for 404s
 
 ## [2026-05-14] Frontend router uses /playground/:experimentId not /playground/experiments/:experimentId - correct URL is localhost:5175/playground/titanic_survival
 
